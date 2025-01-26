@@ -1,0 +1,45 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class Dealership {
+    -String dealer_id
+    -ArrayList<Vehicle> list_cars
+    -boolean receiving_vehicle
+
+     +add_incoming_vehicle()
+     +enable_receiving_vehicle()
+     +disable_receiving_vehicle()
+     +get_dealership_status()
+
+
+
+}
+interface Vehicle{
+    String vehicle_id
+    String vehicle_manufacturer
+    String vehicle_model
+    BigDecimal vehicle_price
+    LocalDate acquisition_date
+}
+
+class SUV extends Vehicle
+{
+    String vehicle_type = "SUV"
+}
+class Sedan extends Vehicle
+{
+    String vehicle_type = "Sedan"
+}
+class Pickup extends Vehicle
+{
+    String vehicle_type = "Pickup"
+}
+class Sports_Car extends Vehicle
+{
+    String vehicle_type = "Sports_Car"
+}
+
+
+
+Dealership "1" --> "*" Vehicle
+@enduml
