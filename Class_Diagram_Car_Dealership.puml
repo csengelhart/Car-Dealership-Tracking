@@ -1,5 +1,15 @@
 @startuml
 'https://plantuml.com/class-diagram
+class Company {
+    -String company_id
+    -String company_name
+    -ArrayList<Dealership> list_dealerships
+
+    +add_dealership()
+    +get_list_dealerships()
+    +find_dealership()
+
+}
 
 class Dealership {
     -String dealer_id
@@ -10,10 +20,9 @@ class Dealership {
      +enable_receiving_vehicle()
      +disable_receiving_vehicle()
      +get_dealership_status()
-
-
-
+     +get_list_cars()
 }
+
 interface Vehicle{
     String vehicle_id
     String vehicle_manufacturer
@@ -39,7 +48,6 @@ class Sports_Car extends Vehicle
     String vehicle_type = "Sports_Car"
 }
 
-
-
 Dealership "1" --> "*" Vehicle
+Company "1" --> "*" Dealership
 @enduml
