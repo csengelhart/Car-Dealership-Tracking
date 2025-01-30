@@ -23,29 +23,30 @@ class Dealership {
      +get_list_cars()
 }
 
-interface Vehicle{
+abstract class Vehicle{
     String vehicle_id
     String vehicle_manufacturer
     String vehicle_model
-    BigDecimal vehicle_price
-    LocalDate acquisition_date
+    double vehicle_price
+    Date acquisition_date
+    protected void setVehicleType(String vehicle_type)
 }
 
 class SUV extends Vehicle
 {
-    String vehicle_type = "SUV"
+    SUV(){setVehicleType("SUV")}
 }
 class Sedan extends Vehicle
 {
-    String vehicle_type = "Sedan"
+    Sedan(){setVehicleType("Sedan")}
 }
 class Pickup extends Vehicle
 {
-    String vehicle_type = "Pickup"
+    Pickup(){setVehicleType("Pickup)}
 }
 class Sports_Car extends Vehicle
 {
-    String vehicle_type = "Sports_Car"
+    Sports_Car(){setVehicleType("Sports_Car")}
 }
 
 Dealership "1" --> "*" Vehicle
