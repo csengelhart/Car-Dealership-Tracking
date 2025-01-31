@@ -1,15 +1,10 @@
 @startuml
 
 
-System <- Dealership: get_dealership_status()
-    alt receiving_vehicle == true
-        Dealership -> System: add_incoming_vehicle()
-
-    else receiving_vehicle == false
-        Dealership -> System: Throw Exception
-
-    end
-
-
+System -> Dealership: get_dealership_status()
+System <- Dealership: result: receiving_vehicle status
+    opt receiving_vehicle == true
+        System -> Dealership: add_incoming_vehicle()
+    end opt
 
 @enduml
