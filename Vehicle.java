@@ -15,19 +15,18 @@ public abstract class Vehicle {
     private Date acquisitionDate;
     private String vehicleType; // Common field to all vehicle
 
-    // Constructor
-    public Vehicle(){
-
-    }
-
-    /** Method for each type of vehicle
-
-        @param vehicle_type the vehicle_type of the specific vehicle class that will extend Vehicle
+    /**
+     * Constructor method to be used by Vehicle's child classes
+     * to specify the children's vehicle type for example, SUV, Sedan, Pickup, Sports car.
+     *
+     * @param vehicle_type represents the specific vehicle type that the extending class is
      */
-    protected void setVehicleType(String vehicle_type)
+    public Vehicle(String vehicle_type)
     {
         this.vehicleType = vehicle_type;
+
     }
+
 
     /**
      * Sets the vehicle ID.
@@ -74,7 +73,7 @@ public abstract class Vehicle {
         this.acquisitionDate = acquisitionDate;
     }
 
-    
+
 
     // Getter methods for shared attributes
 
