@@ -1,3 +1,5 @@
+package javaFiles;
+
 /**
  * Sedan is a child class of Vehicle, it calls Vehicle class's constructor
  * with the string "Sedan" , which then sets a Sedan object's vehicle_type to "Sedan"
