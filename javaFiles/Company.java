@@ -6,6 +6,7 @@ public class Company {
 private String company_id;
 private String company_name;
 private ArrayList<Dealership> list_dealerships;
+}
 
 public Company(String company_id, String company_name) {
 this.company_id = copmany_id;
