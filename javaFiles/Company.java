@@ -9,7 +9,7 @@ private ArrayList<Dealership> list_dealerships;
 }
 
 public Company(String company_id, String company_name) {
-this.company_id = copmany_id;
+this.company_id = company_id;
 this.company_name = company_name;
 this.list_dealerships = new ArrayList<>();
 }
