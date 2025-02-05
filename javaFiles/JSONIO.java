@@ -5,24 +5,26 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-
 import java.io.*;
-
 
 /**
  * A class that reads and writes to JSON files
  *
  * @author Dylan Browne
  */
-
 public class JSONIO
 {
-    String filePath;
-    char mode;
+    private final File file;
+    private final char mode;
+    private final static String[] keyOrder = {
+            "dealership_id", "vehicle_type",
+            "vehicle_manufacturer", "vehicle_model",
+            "vehicle_id", "price", "acquisition_date" };
 
     /**
      * Creates or opens a JSON file with name fileName in read ('r') or write ('w') mode.
      * Read mode allows the reading, but not writing of files, write mode allows for the
+     * writing, but not reading of files.
      *
      * @param filePath The path of the file to be opened or created
      * @param mode A char representation of the type of file this is (read 'r' or write 'w')
@@ -30,7 +32,7 @@ public class JSONIO
      */
     public JSONIO(String filePath, char mode) throws ReadWriteException {
         this.mode = getMode(mode);
-        this.filePath = filePath;
+        this.file = new File(filePath);
     }
 
     /**
@@ -54,19 +56,30 @@ public class JSONIO
         throw new ReadWriteException(message);
     }
 
-    public String[] getKeyOrder() {
-        return new String[] {
-                "dealership_id", "vehicle_type",
-                "vehicle_manufacturer", "vehicle_model",
-                "vehicle_id", "price", "acquisition_date" };
+    /**
+     * Returns keyOrder, which is a list of Strings that correspond
+     * to the index of the corresponding variable index in input and
+     * output String[] for the read and write class.
+     *
+     * @return The
+     */
+    public static String[] getKeyOrder() {
+        return keyOrder;
     }
 
+    /**
+     * Reads and returns the data stored in the file of this object.
+     *
+     * @return An array of String[] that correspond to the array of data stored
+     *         in the JSON file for this object. The String[] has data in the
+     *         indexes represented by keyOrder.
+     * @throws ReadWriteException Thrown if not in read ('r') mode.
+     */
     public String[][] read() throws ReadWriteException {
         if (mode != 'r') {
             throw new ReadWriteException("Must be mode 'r', not mode '" + mode + "'.");
         }
         JSONParser parser = new JSONParser();
-        File file = new File(filePath);
         Reader fileReader;
         JSONObject jFile = null;
         JSONArray jArray;
@@ -101,13 +114,12 @@ public class JSONIO
     }
 
     /**
+     * Takes an array of String[] to write to the file stored in this object.
      *
      * @param data An array of an array of Strings to write to a file.
-     *             The array of String should be in the form:
-     *             { "dealership_id", "vehicle_type", "vehicle_manufacturer",
-     *               "vehicle_model", "vehicle_id", "price", "acquisition_date" }
+     *             The array of String should be in the order represented by keyOrder.
      * @return The number of entries written to the file
-     * @throws ReadWriteException Thrown if the file is not in write mode
+     * @throws ReadWriteException Thrown if not in write ('w') mode.
      */
     public int write(String[][] data) throws ReadWriteException {
         int added = 0;
@@ -133,7 +145,6 @@ public class JSONIO
             }
         }
 
-        File file = new File(filePath);
         Writer fileWriter;
         JSONObject jFile = new JSONObject();
         jFile.put("car_inventory", jArray);
@@ -163,8 +174,6 @@ public class JSONIO
         } catch (ReadWriteException e) {
             System.out.println(e.getMessage());
         }
-
-
 
     }
 }
