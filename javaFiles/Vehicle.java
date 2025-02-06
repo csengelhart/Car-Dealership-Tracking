@@ -1,10 +1,13 @@
 package javaFiles;
-/**
-Vehicle is an abstract class that defines a set of common attributes
-and behaviors for all vehicle types. This class serves as a blueprint for any
-specific vehicle types that may extend it
 
-*/
+/**
+ Vehicle is an abstract class that defines a set of common attributes
+ and behaviors for all vehicle types. This class serves as a blueprint for any
+ specific vehicle types that may extend it
+
+ @author Christopher Engelhart
+ */
+
 
 import java.util.Date;
 
