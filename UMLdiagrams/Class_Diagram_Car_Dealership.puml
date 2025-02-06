@@ -1,3 +1,5 @@
+'@author Christopher Engelhart
+
 @startuml
 'https://plantuml.com/class-diagram
 class Company {
@@ -6,48 +8,50 @@ class Company {
     -ArrayList<Dealership> list_dealerships
 
     +add_dealership()
-    +get_list_dealerships()
-    +find_dealership()
+    +ArrayList<Dealership> get_list_dealerships()
+    +Dealership find_dealership()
 
 }
 
 class Dealership {
-    -String dealer_id
-    -ArrayList<Vehicle> list_cars
+    -final String dealer_id
+    -final ArrayList<Vehicle> vehicle_inventory
     -boolean receiving_vehicle
 
      +add_incoming_vehicle()
      +enable_receiving_vehicle()
      +disable_receiving_vehicle()
-     +get_dealership_status()
-     +get_list_cars()
+     +Boolean getStatus_AcquiringVehicles()
+     +ArrayList<Vehicle>getInventory_Vehicles()
 }
 
 abstract class Vehicle{
-    String vehicle_id
-    String vehicle_manufacturer
-    String vehicle_model
-    double vehicle_price
-    Date acquisition_date
-    protected void setVehicleType(String vehicle_type)
+    -String vehicleID
+    -String vehicleManufacturer
+    -String vehicleModel
+    -double vehiclePrice
+    -long acquisitionDate
+    -String vehicleType
+    +Vehicle(String)
 }
 
 class SUV extends Vehicle
 {
-    SUV(){setVehicleType("SUV")}
+    SUV(){super("SUV")}
 }
 class Sedan extends Vehicle
 {
-    Sedan(){setVehicleType("Sedan")}
+    Sedan(){super("Sedan"}
 }
 class Pickup extends Vehicle
 {
-    Pickup(){setVehicleType("Pickup)}
+    Pickup(){super("Pickup")}
 }
 class Sports_Car extends Vehicle
 {
-    Sports_Car(){setVehicleType("Sports_Car")}
+    Sports_Car(){super("Sports_Car")}
 }
+
 
 Dealership "1" --> "*" Vehicle
 Company "1" --> "*" Dealership
