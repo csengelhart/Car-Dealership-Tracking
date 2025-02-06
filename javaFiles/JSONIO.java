@@ -109,10 +109,7 @@ public class JSONIO
             for (int j = 0; j < keyOrder.length; j++) {
                 String key = keyOrder[j];
                 Object dataPoint = jObj.get(key);
-                if (key.equals("acquisition_date")) { //acquisition date is in Epoch format convert to dd-mm-yyyy
-                    output[i][j] = convertMilisec_to_date((Long) dataPoint);
-
-                } else if (key.equals("price")) {
+                if (key.equals("acquisition_date") || key.equals("price")) {
                     output[i][j] = String.valueOf(dataPoint);
                 } else {
                     output[i][j] = (String) dataPoint;
@@ -121,6 +118,25 @@ public class JSONIO
         }
 
         return output;
+    }
+
+    /**
+     * Takes a String[] of data in the order keyOrder and converts it to a JSONObject and returns it
+     *
+     * @param data The data of items to be ordered in a JSONObject wear the keys for the data
+     *             correspond to the index of the key in keyOrder.
+     * @return The newly created JSONObject
+     */
+    private JSONObject makeJSONObject(String[] data) {
+        JSONObject jObj = new JSONObject();
+        for (int i = 0; i < keyOrder.length; i++) {
+            Object dataPoint = data[i];
+            if (keyOrder[i].equals("price") || keyOrder[i].equals("acquisition_date")) {
+                dataPoint = Long.parseLong((String) dataPoint);
+            }
+            jObj.put(keyOrder[i], dataPoint);
+        }
+        return jObj;
     }
 
     /**
@@ -137,17 +153,10 @@ public class JSONIO
             throw new ReadWriteException("Must be mode 'w', not mode '" + mode + "'.");
         }
 
-        String[] keyOrder = getKeyOrder();
-
         JSONArray jArray = new JSONArray();
         for (String[] carData : data) {
             if (carData.length == keyOrder.length) {
-                JSONObject jObj = new JSONObject();
-                for (int i = 0; i < keyOrder.length; i++) {
-                    Object dataPoint = carData[i];
-                    jObj.put(keyOrder[i], dataPoint);
-                }
-                jArray.add(jObj);
+                jArray.add(makeJSONObject(carData));
                 added++;
             }
         }
@@ -181,11 +190,11 @@ public class JSONIO
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
         fileChooser.setFileFilter(new FileNameExtensionFilter("JSON Files", new String[]{"json"}));
-        int result = fileChooser.showOpenDialog((Component)null);
+        int result = fileChooser.showOpenDialog(null);
         return result == 0 ? fileChooser.getSelectedFile() : null;
     }
 
-
+/*
     /**
      * Takes a long value that represents the number of milliseconds since 01Jan1970
      * and converts to a date in the format "dd-MM-yyyy"
@@ -193,24 +202,19 @@ public class JSONIO
      * @return formatted String representation of acquisition date
      *
      * @author Christopher Engelhart
-     */
-    public static String convertMilisec_to_date(long acquisition_date) {
+     *//*
+    public static String convertMillisecondToDate(long acquisition_date) {
         Date date = new Date(acquisition_date);
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
         return sdf.format(date);
     }
-
+*/
 
     // for testing purposes
     public static void main(String[] args) {
-        // TODO: Check inventory.json is supposed to be case sensitive
-        // (download from d2l and compare to this inventory.json if I forget what this means)
-
         try {
             System.out.println("Select an inventory file to process");
             String input_filePath = Objects.requireNonNull(selectJsonFile()).toString();
-            System.out.println("Create a name and choose location to save output file");
-            String output_filePath = Objects.requireNonNull(selectJsonFile()).toString();
 
             // input file
             File file = new File(input_filePath);
@@ -218,15 +222,19 @@ public class JSONIO
                 throw new ReadWriteException("The file does not exist or is empty.");
             }
 
-
-
             JSONIO jReadExample = new JSONIO(input_filePath, 'r');
+            String[][] read = jReadExample.read();
+
+            System.out.println("Create a name and choose location to save output file");
+            String output_filePath = Objects.requireNonNull(selectJsonFile()).toString();
 
             JSONIO jWriteExample = new JSONIO(output_filePath, 'w');
-            String[][] read = jReadExample.read();
-            if (jWriteExample.write(read) == read.length) {
-                System.out.println("Added all files.");
 
+            int jObjsRead = jWriteExample.write(read);
+            if (jObjsRead == read.length) {
+                System.out.println("Added all files.");
+            } else {
+                System.out.println("Added " + jObjsRead + "/" + read.length + " items.");
             }
         } catch (ReadWriteException e) {
             System.out.println(e.getMessage());
