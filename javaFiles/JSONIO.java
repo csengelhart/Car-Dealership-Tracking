@@ -7,10 +7,7 @@ import org.json.simple.parser.ParseException;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
 import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Objects;
 
 
@@ -39,7 +36,12 @@ public class JSONIO
      */
     public JSONIO(String filePath, char mode) throws ReadWriteException {
         this.mode = getMode(mode);
-        this.file = new File(filePath);
+        if (filePath.endsWith(".json")) {
+            this.file = new File(filePath);
+        } else {
+            throw new ReadWriteException("filePath \"" + filePath +"\" is not a .json file. "
+                                        + "Make sure to include .json at the end for filePath.");
+        }
     }
 
     /**
@@ -75,6 +77,37 @@ public class JSONIO
     }
 
     /**
+     * Takes a JSONObject and an output String[]. Fills the String array with the data
+     * from the JSONObject in the same key order as keyOrder. If any keys are absent,
+     * data is filled with null.
+     *
+     * @param jObj The JSONObject that data is being extracted from.
+     * @param output The String[] that data is being added to.
+     */
+    private void readJSONObject(JSONObject jObj, String[] output) {
+        for (int i = 0; i < keyOrder.length; i++) {
+            String key = keyOrder[i];
+            Object dataPoint = jObj.get(key);
+
+            if (dataPoint == null) {
+                System.out.println("Key \"" + key + "\" not in JSONObj, " +
+                        "saving all JSONObject data from it as null in data String[][].");
+                // clearing stored data for the object.
+                for (int j = 0; j < keyOrder.length; j++) {
+                    output[j] = null;
+                }
+                break;
+            }
+
+            if (key.equals("acquisition_date") || key.equals("price")) {
+                output[i] = String.valueOf(dataPoint);
+            } else {
+                output[i] = (String) dataPoint;
+            }
+        }
+    }
+
+    /**
      * Reads and returns the data stored in the file of this object.
      *
      * @return An array of String[] that correspond to the array of data stored
@@ -101,20 +134,11 @@ public class JSONIO
         assert jFile != null;
 
         jArray = (JSONArray)jFile.get("car_inventory");
-        String[] keyOrder = getKeyOrder();
         String[][] output =  new String[jArray.size()][keyOrder.length];
 
         for (int i = 0; i < jArray.size(); i++) {
             JSONObject jObj = (JSONObject)jArray.get(i);
-            for (int j = 0; j < keyOrder.length; j++) {
-                String key = keyOrder[j];
-                Object dataPoint = jObj.get(key);
-                if (key.equals("acquisition_date") || key.equals("price")) {
-                    output[i][j] = String.valueOf(dataPoint);
-                } else {
-                    output[i][j] = (String) dataPoint;
-                }
-            }
+            readJSONObject(jObj, output[i]);
         }
 
         return output;
@@ -131,6 +155,7 @@ public class JSONIO
         JSONObject jObj = new JSONObject();
         for (int i = 0; i < keyOrder.length; i++) {
             Object dataPoint = data[i];
+            if (dataPoint == null) {return null;}
             if (keyOrder[i].equals("price") || keyOrder[i].equals("acquisition_date")) {
                 dataPoint = Long.parseLong((String) dataPoint);
             }
@@ -156,8 +181,11 @@ public class JSONIO
         JSONArray jArray = new JSONArray();
         for (String[] carData : data) {
             if (carData.length == keyOrder.length) {
-                jArray.add(makeJSONObject(carData));
-                added++;
+                JSONObject jObj = makeJSONObject(carData);
+                if (jObj != null) {
+                    jArray.add(jObj);
+                    added++;
+                }
             }
         }
 
