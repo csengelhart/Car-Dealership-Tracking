@@ -1,7 +1,8 @@
+'@author Christopher Engelhart
 @startuml
 
 
-System -> Dealership: get_dealership_status()
+System -> Dealership: getStatus_AcquiringVehicles()
 System <- Dealership: result: receiving_vehicle status
     opt receiving_vehicle == true
         System -> Dealership: add_incoming_vehicle()

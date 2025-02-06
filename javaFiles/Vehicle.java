@@ -9,14 +9,12 @@ package javaFiles;
  */
 
 
-import java.util.Date;
-
 public abstract class Vehicle {
     private String vehicleId;
     private String vehicleManufacturer;
     private String vehicleModel;
     private double vehiclePrice;
-    private Date acquisitionDate;
+    private long acquisitionDate;
     private String vehicleType; // Common field to all vehicle
 
     /**
@@ -73,8 +71,7 @@ public abstract class Vehicle {
      *
      * @param acquisitionDate the date the vehicle was acquired
      */
-    public void setAcquisitionDate(Date acquisitionDate) {
-        this.acquisitionDate = acquisitionDate;
+    public void setAcquisitionDate(long acquisitionDate) { this.acquisitionDate = acquisitionDate;
     }
 
 
@@ -97,7 +94,7 @@ public abstract class Vehicle {
         return vehiclePrice;
     }
 
-    public Date getAcquisitionDate() {
+    public long getAcquisitionDate() {
         return acquisitionDate;
     }
 
