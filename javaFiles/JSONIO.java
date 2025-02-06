@@ -10,6 +10,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
 import java.util.Objects;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+
 
 /**
  * A class that reads and writes to JSON files
@@ -20,7 +24,7 @@ public class JSONIO
 {
     private final File file;
     private final char mode;
-    private final static String[] keyOrder = {
+    private final static String[] keys = {
             "dealership_id", "vehicle_type",
             "vehicle_manufacturer", "vehicle_model",
             "vehicle_id", "price", "acquisition_date" };
@@ -66,56 +70,44 @@ public class JSONIO
     }
 
     /**
-     * Returns keyOrder, which is a list of Strings that correspond
+     * Returns keys, which is a list of Strings that correspond
      * to the index of the corresponding variable index in input and
      * output String[] for the read and write class.
      *
      * @return The
      */
-    public static String[] getKeyOrder() {
-        return keyOrder;
+    public static String[] getKeys() {
+        return keys;
     }
 
     /**
-     * Takes a JSONObject and an output String[]. Fills the String array with the data
-     * from the JSONObject in the same key order as keyOrder. If any keys are absent,
-     * data is filled with null.
+     * Takes a JSONObject and creates and returns a Map. Fills the Map with the
+     * data from the JSONObject with the same keys as keys. If any keys are absent,
+     * null is returned.
      *
      * @param jObj The JSONObject that data is being extracted from.
-     * @param output The String[] that data is being added to.
      */
-    private void readJSONObject(JSONObject jObj, String[] output) {
-        for (int i = 0; i < keyOrder.length; i++) {
-            String key = keyOrder[i];
+    private Map<String, Object> readJSONObject(JSONObject jObj) {
+        Map<String, Object> map = new HashMap<>();
+
+        for (String key : keys) {
             Object dataPoint = jObj.get(key);
+            if (dataPoint == null) {return null;}
+            map.put(key, dataPoint);
 
-            if (dataPoint == null) {
-                System.out.println("Key \"" + key + "\" not in JSONObj, " +
-                        "saving all JSONObject data from it as null in data String[][].");
-                // clearing stored data for the object.
-                for (int j = 0; j < keyOrder.length; j++) {
-                    output[j] = null;
-                }
-                break;
-            }
-
-            if (key.equals("acquisition_date") || key.equals("price")) {
-                output[i] = String.valueOf(dataPoint);
-            } else {
-                output[i] = (String) dataPoint;
-            }
         }
+        return map;
     }
 
     /**
      * Reads and returns the data stored in the file of this object.
      *
-     * @return An array of String[] that correspond to the array of data stored
-     *         in the JSON file for this object. The String[] has data in the
-     *         indexes represented by keyOrder.
+     * @return An ArrayList of Map<String, Object>s that correspond to the
+     *         JSONArray of data stored in the JSON file for this object.
+     *         The Map has data in the same keys as keys.
      * @throws ReadWriteException Thrown if not in read ('r') mode.
      */
-    public String[][] read() throws ReadWriteException {
+    public ArrayList<Map<String, Object>> read() throws ReadWriteException {
         if (mode != 'r') {
             throw new ReadWriteException("Must be mode 'r', not mode '" + mode + "'.");
         }
@@ -134,53 +126,52 @@ public class JSONIO
         assert jFile != null;
 
         jArray = (JSONArray)jFile.get("car_inventory");
-        String[][] output =  new String[jArray.size()][keyOrder.length];
 
-        for (int i = 0; i < jArray.size(); i++) {
-            JSONObject jObj = (JSONObject)jArray.get(i);
-            readJSONObject(jObj, output[i]);
+        ArrayList< Map<String, Object> > maps = new ArrayList<>();
+
+        for (Object jObj : jArray) {
+            Map<String, Object> map = readJSONObject((JSONObject) jObj);
+            if (map != null) {maps.add(map);}
         }
 
-        return output;
+        return maps;
     }
 
     /**
-     * Takes a String[] of data in the order keyOrder and converts it to a JSONObject and returns it
+     * Takes a Map<String, Object> of data with the same keys as keys
+     * and converts it to a JSONObject and returns it.
      *
-     * @param data The data of items to be ordered in a JSONObject wear the keys for the data
-     *             correspond to the index of the key in keyOrder.
+     * @param data The Map of items to be ordered in a JSONObject with the keys for
+     *             the data the same as the keys in keys.
      * @return The newly created JSONObject
      */
-    private JSONObject makeJSONObject(String[] data) {
+    private JSONObject makeJSONObject(Map<String, Object> data) {
         JSONObject jObj = new JSONObject();
-        for (int i = 0; i < keyOrder.length; i++) {
-            Object dataPoint = data[i];
+        for (String key : keys) {
+            Object dataPoint = data.get(key);
             if (dataPoint == null) {return null;}
-            if (keyOrder[i].equals("price") || keyOrder[i].equals("acquisition_date")) {
-                dataPoint = Long.parseLong((String) dataPoint);
-            }
-            jObj.put(keyOrder[i], dataPoint);
+            jObj.put(key, dataPoint);
         }
         return jObj;
     }
 
     /**
-     * Takes an array of String[] to write to the file stored in this object.
+     * Takes an ArrayList of Maps to write to the file stored in this object.
      *
-     * @param data An array of an array of Strings to write to a file.
-     *             The array of String should be in the order represented by keyOrder.
+     * @param data ArrayList of Maps to write to a file.
+     *             The array of String should have the keys in key.
      * @return The number of entries written to the file
      * @throws ReadWriteException Thrown if not in write ('w') mode.
      */
-    public int write(String[][] data) throws ReadWriteException {
+    public int write(ArrayList<Map<String, Object>> data) throws ReadWriteException {
         int added = 0;
         if (mode != 'w') {
             throw new ReadWriteException("Must be mode 'w', not mode '" + mode + "'.");
         }
 
         JSONArray jArray = new JSONArray();
-        for (String[] carData : data) {
-            if (carData.length == keyOrder.length) {
+        for (Map<String, Object> carData : data) {
+            if (carData.size() == keys.length) {
                 JSONObject jObj = makeJSONObject(carData);
                 if (jObj != null) {
                     jArray.add(jObj);
@@ -202,7 +193,6 @@ public class JSONIO
 
         return added;
     }
-
 
     /**
      * Opens a file chooser dialog to allow the user to select a JSON file.
@@ -251,7 +241,7 @@ public class JSONIO
             }
 
             JSONIO jReadExample = new JSONIO(input_filePath, 'r');
-            String[][] read = jReadExample.read();
+            ArrayList<Map<String, Object>> read = jReadExample.read();
 
             System.out.println("Create a name and choose location to save output file");
             String output_filePath = Objects.requireNonNull(selectJsonFile()).toString();
@@ -259,10 +249,10 @@ public class JSONIO
             JSONIO jWriteExample = new JSONIO(output_filePath, 'w');
 
             int jObjsRead = jWriteExample.write(read);
-            if (jObjsRead == read.length) {
+            if (jObjsRead == read.size()) {
                 System.out.println("Added all files.");
             } else {
-                System.out.println("Added " + jObjsRead + "/" + read.length + " items.");
+                System.out.println("Added " + jObjsRead + "/" + read.size() + " items.");
             }
         } catch (ReadWriteException e) {
             System.out.println(e.getMessage());
