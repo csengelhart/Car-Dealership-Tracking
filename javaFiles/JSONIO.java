@@ -12,6 +12,7 @@ import java.util.Objects;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ArrayList;
 
 
@@ -70,15 +71,11 @@ public class JSONIO
     }
 
     /**
-     * Returns keys, which is a list of Strings that correspond
-     * to the index of the corresponding variable index in input and
-     * output String[] for the read and write class.
+     * Returns keys, which is a list of Strings of the keys of the JSONObjects
      *
-     * @return The
+     * @return The keys to read of JSONObjects to be read from and written to
      */
-    public static String[] getKeys() {
-        return keys;
-    }
+    public static String[] getKeys() {return keys;}
 
     /**
      * Takes a JSONObject and creates and returns a Map. Fills the Map with the
@@ -102,12 +99,12 @@ public class JSONIO
     /**
      * Reads and returns the data stored in the file of this object.
      *
-     * @return An ArrayList of Map<String, Object>s that correspond to the
+     * @return A List of Map<String, Object>s that correspond to the
      *         JSONArray of data stored in the JSON file for this object.
      *         The Map has data in the same keys as keys.
      * @throws ReadWriteException Thrown if not in read ('r') mode.
      */
-    public ArrayList<Map<String, Object>> read() throws ReadWriteException {
+    public List<Map<String, Object>> read() throws ReadWriteException {
         if (mode != 'r') {
             throw new ReadWriteException("Must be mode 'r', not mode '" + mode + "'.");
         }
@@ -127,7 +124,7 @@ public class JSONIO
 
         jArray = (JSONArray)jFile.get("car_inventory");
 
-        ArrayList< Map<String, Object> > maps = new ArrayList<>();
+        List< Map<String, Object> > maps = new ArrayList<>();
 
         for (Object jObj : jArray) {
             Map<String, Object> map = readJSONObject((JSONObject) jObj);
@@ -156,14 +153,14 @@ public class JSONIO
     }
 
     /**
-     * Takes an ArrayList of Maps to write to the file stored in this object.
+     * Takes a List of Maps to write to the file stored in this object.
      *
-     * @param data ArrayList of Maps to write to a file.
+     * @param data List of Maps to write to a file.
      *             The array of String should have the keys in key.
      * @return The number of entries written to the file
      * @throws ReadWriteException Thrown if not in write ('w') mode.
      */
-    public int write(ArrayList<Map<String, Object>> data) throws ReadWriteException {
+    public int write(List<Map<String, Object>> data) throws ReadWriteException {
         int added = 0;
         if (mode != 'w') {
             throw new ReadWriteException("Must be mode 'w', not mode '" + mode + "'.");
@@ -207,7 +204,7 @@ public class JSONIO
     public static File selectJsonFile() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
-        fileChooser.setFileFilter(new FileNameExtensionFilter("JSON Files", new String[]{"json"}));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("JSON Files", "json"));
         int result = fileChooser.showOpenDialog(null);
         return result == 0 ? fileChooser.getSelectedFile() : null;
     }
@@ -241,7 +238,7 @@ public class JSONIO
             }
 
             JSONIO jReadExample = new JSONIO(input_filePath, 'r');
-            ArrayList<Map<String, Object>> read = jReadExample.read();
+            List<Map<String, Object>> read = jReadExample.read();
 
             System.out.println("Create a name and choose location to save output file");
             String output_filePath = Objects.requireNonNull(selectJsonFile()).toString();
