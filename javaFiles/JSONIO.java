@@ -209,21 +209,20 @@ public class JSONIO
         return result == 0 ? fileChooser.getSelectedFile() : null;
     }
 
-/*
     /**
-     * Takes a long value that represents the number of milliseconds since 01Jan1970
-     * and converts to a date in the format "dd-MM-yyyy"
-     * @param acquisition_date long value that is the milliseconds since 01Jan1970
-     * @return formatted String representation of acquisition date
+     * Opens a file chooser dialog to allow the user to select a JSON file.
+     * The file chooser will start in the current user's working directory
+     * and will filter files to only show those with a ".json" extension.
      *
-     * @author Christopher Engelhart
-     *//*
-    public static String convertMillisecondToDate(long acquisition_date) {
-        Date date = new Date(acquisition_date);
-        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
-        return sdf.format(date);
+     * @return The selected path to the JSON file if the user selects a file and confirms
+     *         the dialog, or null if the user cancels or closes the dialog without
+     *         selecting a file.
+     */
+    public static String selectJsonFilePath() {
+        File file = selectJsonFile();
+        if (file == null) {return null;}
+        return file.toString();
     }
-*/
 
     // for testing purposes
     public static void main(String[] args) {
