@@ -1,19 +1,20 @@
 package javaFiles;
+
 /**
-Vehicle is an abstract class that defines a set of common attributes
-and behaviors for all vehicle types. This class serves as a blueprint for any
-specific vehicle types that may extend it
+ Vehicle is an abstract class that defines a set of common attributes
+ and behaviors for all vehicle types. This class serves as a blueprint for any
+ specific vehicle types that may extend it
 
-*/
+ @author Christopher Engelhart
+ */
 
-import java.util.Date;
 
 public abstract class Vehicle {
     private String vehicleId;
     private String vehicleManufacturer;
     private String vehicleModel;
     private double vehiclePrice;
-    private Date acquisitionDate;
+    private long acquisitionDate;
     private String vehicleType; // Common field to all vehicle
 
     /**
@@ -70,8 +71,7 @@ public abstract class Vehicle {
      *
      * @param acquisitionDate the date the vehicle was acquired
      */
-    public void setAcquisitionDate(Date acquisitionDate) {
-        this.acquisitionDate = acquisitionDate;
+    public void setAcquisitionDate(long acquisitionDate) { this.acquisitionDate = acquisitionDate;
     }
 
 
@@ -94,7 +94,7 @@ public abstract class Vehicle {
         return vehiclePrice;
     }
 
-    public Date getAcquisitionDate() {
+    public long getAcquisitionDate() {
         return acquisitionDate;
     }
 

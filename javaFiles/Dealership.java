@@ -22,7 +22,7 @@ public class Dealership {
     }
 
     // Returns Dealer ID
-    public String getID () {
+    public String getDealerId () {
         return dealer_id;
     }
 
