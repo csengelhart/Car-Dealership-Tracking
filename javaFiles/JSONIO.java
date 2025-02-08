@@ -103,7 +103,7 @@ public class JSONIO
                 String key = keyOrder[j];
                 Object dataPoint = jObj.get(key);
                 if (dataPoint instanceof Long) {
-                    output[i][j] = ( (Long) dataPoint).toString();
+                    output[i][j] = ( (Long) dataPoint ).toString();
                 } else {
                     output[i][j] = (String) dataPoint;
                 }
@@ -161,9 +161,6 @@ public class JSONIO
 
     // for testing purposes
     public static void main(String[] args) {
-        // TODO: Check inventory.json is supposed to be case sensitive
-        // (download from d2l and compare to this inventory.json if I forget what this means)
-
         try {
             JSONIO jReadExample = new JSONIO("Car-Dealership-Tracking/inventory.json", 'r');
             JSONIO jWriteExample = new JSONIO("Car-Dealership-Tracking/output.json", 'w');
