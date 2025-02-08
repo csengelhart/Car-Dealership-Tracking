@@ -51,7 +51,7 @@ public class Dealership {
         // Checks if the dealership is accepting new vehicles.
         if (!receiving_vehicle) {
             System.out.println("Dealership " + this.dealer_id + " is not accepting new vehicles at this time.");
-            System.out.println("Vehicle ID: " + newVehicle.getVehicleId() + "was not added to Dealership: " + this.dealer_id +".");
+            System.out.println("Vehicle ID: " + newVehicle.getVehicleId() + " was not added to Dealership: " + this.dealer_id +".");
             return; // Exits method if the dealership is not accepting new vehicles.
         } 
         
@@ -59,7 +59,7 @@ public class Dealership {
         for (Vehicle vehicle : vehicle_inventory) {
             if (vehicle.getVehicleId().equals(newVehicle.getVehicleId())) {
                 System.out.println("This vehicle is already located at the dealership.");
-                System.out.println("Vehicle ID: " + newVehicle.getVehicleId() + "was not added to Dealership: " + this.dealer_id + ".");
+                System.out.println("Vehicle ID: " + newVehicle.getVehicleId() + " was not added to Dealership: " + this.dealer_id + ".");
                 return; // Exits method if the vehicle already exists at the dealership
             }
         }
