@@ -23,55 +23,66 @@ public class Main {
         String userInput;
         String filePath;
         String[][] carInventory;
+        Company company = new Company("c_ID", "c_Name");
+        HashMap<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
+        boolean filepath_empty = true; // flag variable to track whether a file has already been read
 
         while (true) {
-            System.out.print("Enter the JSON file name: ");
-            filePath = scanner.nextLine();
 
-            // Verifies and corrects file extension for .json
-            filePath = verifyFileExtension(filePath);
+            if(filepath_empty){
+                System.out.print("Enter the JSON file name: ");
+                filePath = scanner.nextLine();
 
-            // Checks if the .json file exists. Prompts user for new file name if not found.
-            if (!fileExists(filePath)) {
-                System.out.println("File \"" + filePath + "\" does not exist.");
-                System.out.println("Try another file(Y/N)? ");
-                do {
-                    userInput = scanner.nextLine();
-                } while (!userInput.equalsIgnoreCase("y") && !userInput.equalsIgnoreCase("n"));
+                // Verifies and corrects file extension for .json
+                filePath = verifyFileExtension(filePath);
 
-                if (userInput.equalsIgnoreCase("y")) {
-                    continue;
-                } else {
-                    System.out.println("Goodbye.");
-                    break;
+                // Checks if the .json file exists. Prompts user for new file name if not found.
+                if (!fileExists(filePath)) {
+                    System.out.println("File \"" + filePath + "\" does not exist.");
+                    System.out.println("Try another file(Y/N)? ");
+                    do {
+                        userInput = scanner.nextLine();
+                    } while (!userInput.equalsIgnoreCase("y") && !userInput.equalsIgnoreCase("n"));
+
+                    if (userInput.equalsIgnoreCase("y")) {
+                        continue;
+                    } else {
+                        System.out.println("Goodbye.");
+                        break;
+                    }
+
                 }
+
+                System.out.println("Opening file... " + filePath);
+
+                // Retrieves data from the JSON file
+                carInventory = getInventory(filePath);
+
+                // Creates Company object
+                //Company company = new Company("c_ID", "c_Name");
+
+                // Checks for new dealerships. Adds new dealerships to company.
+                populateDealerships(carInventory, company);
+
+                // Output dealership list // TEST
+                System.out.println("Current dealerships...\n" + company.get_list_dealerships());
+
+                // Populates vehicle attributes. Returns HashMap with vehicle(key) to dealership(value) associations.
+                vehicleToDealershipMap = PopulateVehicleInformation(carInventory, company);
+
+                // Output key and value associations // TEST
+                System.out.println("Vehicle destinations...");
+                for (Map.Entry<Vehicle, Dealership> entry : vehicleToDealershipMap.entrySet()) {
+                    Vehicle vehicle = entry.getKey();
+                    Dealership dealership = entry.getValue();
+                    System.out.println("Vehicle ID: " + vehicle.getVehicleId() + " -> Dealership ID: " + dealership.getDealerId());
+                }
+
+                // while(true) {
+                // TODO: Prompt user for the following:
+
+                filepath_empty = false;
             }
-
-            System.out.println("Opening file... " + filePath);
-
-            // Retrieves data from the JSON file
-            carInventory = getInventory(filePath);
-
-            // Creates Company object
-            Company company = new Company("c_ID", "c_Name");
-
-            // Checks for new dealerships. Adds new dealerships to company.
-            populateDealerships(carInventory, company);
-
-            // Output dealership list // TEST
-            System.out.println("Current dealerships...\n" + company.get_list_dealerships());
-
-            // Populates vehicle attributes. Returns HashMap with vehicle(key) to dealership(value) associations.
-            HashMap<Vehicle, Dealership> vehicleToDealershipMap = PopulateVehicleInformation(carInventory, company);
-
-            // Output key and value associations // TEST
-            System.out.println("Vehicle destinations...");
-            for (Map.Entry<Vehicle, Dealership> entry : vehicleToDealershipMap.entrySet()) {
-                Vehicle vehicle = entry.getKey();
-                Dealership dealership = entry.getValue();
-                System.out.println("Vehicle ID: " + vehicle.getVehicleId() + " -> Dealership ID: " + dealership.getDealerId());
-            }
-
             // while(true) {
             // TODO: Prompt user for the following:
 
@@ -96,9 +107,74 @@ public class Main {
                     System.out.println("Checking pending vehicle deliveries...");
                     break;
                 case "3":
-                    // TODO: Implement changing dealership vehicle receiving status
                     System.out.println("Changing dealership vehicle receiving status...");
-                    break;
+
+
+                    Dealership dealer = null; // will hold Dealership object
+                    boolean validDealership = false; // controls loop to find dealership
+
+                    while (!validDealership) {
+                        System.out.println("Enter the ID of the dealership or back to return to menu:");
+                        userInput = scanner.nextLine();
+
+                        // If user enters "exit", go back to the main menu
+                        if (userInput.equalsIgnoreCase("back")) {
+                            System.out.println("Returning to the main menu...");
+
+                            break; // Exit the current while loop and return to the main menu
+                        }
+
+                        // Try to find the dealership
+                        dealer = company.find_dealership(userInput);
+
+                        if (dealer != null) {
+                            validDealership = true; // Dealership found
+                        } else {
+                            // Dealership not found, prompt user to retry or exit
+                            System.out.println("Dealership ID not found.");
+                            System.out.println("Would you like to try again or return to the main menu? (Enter 'try' to retry, 'exit' to go back): ");
+                            String retryInput = scanner.nextLine();
+
+                            if (retryInput.equalsIgnoreCase("exit")) {
+                                System.out.println("Returning to the main menu...");
+
+                                break; // Exit the current while loop and return to the main menu
+                            }
+                            // Otherwise, the loop will continue to prompt for a valid dealership ID
+                        }
+                    }
+
+                    // Proceed with enabling or disabling the vehicle receiving status once a valid dealership is found
+                    if (dealer != null) {
+                        System.out.println("Enable or disable vehicle receiving status for dealership " + userInput + "? (Enter 'enable' or 'disable')");
+                        userInput = scanner.nextLine();
+
+                        if (userInput.equalsIgnoreCase("enable")) {
+                            // Check if the dealership's vehicle receiving status is already enabled
+                            if (dealer.getStatus_AcquiringVehicles()) {
+                                System.out.println("Dealership " + userInput + " is already set to receive vehicles.");
+                            } else {
+                                // Enable vehicle receiving for the dealership
+                                dealer.enable_receiving_vehicle();
+                                System.out.println("Vehicle receiving status for dealership " + userInput + " has been enabled.");
+                            }
+                        } else if (userInput.equalsIgnoreCase("disable")) {
+                            // Disable the vehicle receiving status
+                            if (!dealer.getStatus_AcquiringVehicles()) {
+                                System.out.println("Dealership " + userInput + " is already set to not receive vehicles.");
+                            } else {
+                                dealer.disable_receiving_vehicle();
+                                System.out.println("Vehicle receiving status for dealership " + userInput + " has been disabled.");
+                            }
+                        } else {
+                            System.out.println("Invalid input. Please enter 'enable' or 'disable'.");
+                        }
+                    }
+
+                    // After completing the dealership status change process, return to the main menu
+                    continue; // Exit Case 3 and go back to the main menu
+
+
                 case "4":
                     // TODO: Implement writing dealership inventory to file
                     System.out.println("Writing dealership inventory to file...");
