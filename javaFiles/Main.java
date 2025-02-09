@@ -7,11 +7,11 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         String userInput;
-        List<Map<String, Object>> carInventory = new ArrayList<>();
+        Map<Vehicle, String> carInventory = new HashMap<>(); // Vehicle, dealershipID
         Company company = new Company("c_ID", "c_Name");
         Map<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
 
-        readData(scanner, carInventory);
+        readData(scanner, carInventory, company);
         if (carInventory.isEmpty()) {
             System.out.println("No json file read. No data in company yet.");
         } else {
@@ -120,7 +120,7 @@ public class Main {
                     continue;
                 case "5":
                     // TODO: Implement reading another JSON file
-                    readData(scanner, carInventory);
+                    readData(scanner, carInventory, company);
                     System.out.println("Reading JSON file...");
                     continue;
                 case "6":
@@ -197,14 +197,42 @@ public class Main {
         return jsonio;
     }
 
-    private static void readData(Scanner sc, List<Map<String, Object>> list) {
+    private static void dataToInventory(Map<Vehicle, String> inventory, List<Map<String, Object>> data, Company company) {
+        for (Map<String, Object> map: data) {
+            Dealership dealership = company.find_dealership(JSONIO.getDealIDVal(map));
+            if (dealership == null) {
+                dealership = new Dealership(JSONIO.getDealIDVal(map));
+                company.add_dealership(dealership);
+            }
+            Vehicle vehicle = createNewVehicle(
+                    JSONIO.getTypeVal(map),
+                    JSONIO.getVehicleIDVal(map)
+            );
+            if (vehicle == null) {
+                continue;
+            }
+            vehicle.setVehicleId(JSONIO.getVehicleIDVal(map));
+            vehicle.setVehicleManufacturer(JSONIO.getManufacturerVal(map));
+            vehicle.setVehicleModel(JSONIO.getModelVal(map));
+            vehicle.setVehicleId(JSONIO.getVehicleIDVal(map));
+            vehicle.setVehiclePrice(JSONIO.getPriceVal(map));
+            vehicle.setAcquisitionDate(JSONIO.getDateVal(map));
+
+            inventory.put(vehicle, JSONIO.getDealIDVal(map));
+        }
+    }
+
+    private static void readData(Scanner sc, Map<Vehicle, String> inventory, Company company) {
+        List<Map<String, Object>> data = new ArrayList<>();
         JSONIO jsonio = openFile('r', sc);
         if (jsonio == null) {return;}
         try {
-            list.addAll(jsonio.read());
+            data.addAll(jsonio.read());
         } catch (ReadWriteException e) {
             System.out.println(e.getMessage());
         }
+
+        dataToInventory(inventory, data, company);
     }
 
     private static int writeData(List<Map<String, Object>> data, Scanner sc) {
@@ -246,32 +274,18 @@ public class Main {
         return list;
     }
 
-    private static void writeCompanyData(Company company, List<Map<String, Object>> data) {
-        List<Map<String, Object>> accepted = new ArrayList<>();
-        for (Map<String, Object> map: data) {
-            Dealership dealership = company.find_dealership(JSONIO.getDealIDVal(map));
-            if (dealership == null) {
-                dealership = new Dealership(JSONIO.getDealIDVal(map));
-                company.add_dealership(dealership);
-            }
-            Vehicle vehicle = createNewVehicle(
-                    JSONIO.getTypeVal(map),
-                    JSONIO.getVehicleIDVal(map)
-            );
-            if (vehicle == null) {continue;}
-            vehicle.setVehicleId( JSONIO.getVehicleIDVal(map) );
-            vehicle.setVehicleManufacturer( JSONIO.getManufacturerVal(map));
-            vehicle.setVehicleModel( JSONIO.getModelVal(map) );
-            vehicle.setVehicleId( JSONIO.getVehicleIDVal(map) );
-            vehicle.setVehiclePrice(JSONIO.getPriceVal(map));
-            vehicle.setAcquisitionDate(JSONIO.getDateVal(map));
-
+    private static void writeCompanyData(Company company, Map<Vehicle, String> inventory) {
+        List<Vehicle> accepted = new ArrayList<>();
+        for (Vehicle vehicle : inventory.keySet()) {
+            Dealership dealership = company.find_dealership(inventory.get(vehicle));
             if (dealership.getStatus_AcquiringVehicles()) {
-                accepted.add(map);
+                accepted.add(vehicle);
             }
             dealership.add_incoming_vehicle(vehicle);
         }
-        data.removeAll(accepted);
+        for (Vehicle vehicle : accepted) {
+            inventory.remove(vehicle);
+        }
 
     }
 
