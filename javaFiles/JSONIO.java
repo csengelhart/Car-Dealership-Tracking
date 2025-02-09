@@ -81,13 +81,35 @@ public class JSONIO
     public static String getPriceKey() {        return keys[5];}
     public static String getDateKey() {         return keys[6];}
 
-    /**
-     * Takes a JSONObject and creates and returns a Map. Fills the Map with the
-     * data from the JSONObject with the same keys as keys. If any keys are absent,
-     * null is returned.
-     *
-     * @param jObj The JSONObject that data is being extracted from.
-     */
+    public static String getDealIDVal(Map<String, Object> map) {
+        return (String) map.get(getDealIDKey());
+    }
+    public static String getTypeVal(Map<String, Object> map) {
+        return (String) map.get(getTypeKey());
+    }
+    public static String getManufacturerVal(Map<String, Object> map) {
+        return (String) map.get(getManufacturerKey());
+    }
+    public static String getModelVal(Map<String, Object> map) {
+        return (String) map.get(getModelKey());
+    }
+    public static String getVehicleIDVal(Map<String, Object> map) {
+        return (String) map.get(getVehicleIDKey());
+    }
+    public static long getPriceVal(Map<String, Object> map) {
+        return (long) map.get(getPriceKey());
+    }
+    public static long getDateVal(Map<String, Object> map) {
+        return (long) map.get(getDateKey());
+    }
+
+        /**
+         * Takes a JSONObject and creates and returns a Map. Fills the Map with the
+         * data from the JSONObject with the same keys as keys. If any keys are absent,
+         * null is returned.
+         *
+         * @param jObj The JSONObject that data is being extracted from.
+         */
     private Map<String, Object> readJSONObject(JSONObject jObj) {
         Map<String, Object> map = new HashMap<>();
 
@@ -177,7 +199,11 @@ public class JSONIO
                 if (jObj != null) {
                     jArray.add(jObj);
                     added++;
+                } else {
+                    System.out.println("Did not add. (invalid key)");
                 }
+            } else {
+                System.out.println("Did not add. " + carData.size() + " != " + keys.length);
             }
         }
 

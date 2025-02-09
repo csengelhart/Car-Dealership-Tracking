@@ -170,12 +170,14 @@ public class Main {
 
                 case "4":
                     // TODO: Implement writing dealership inventory to file
-                    writeData(carInventory, scanner);
-                    System.out.println("Writing dealership inventory to file...");
+                    carInventory = getCompanyData(company);
+                    System.out.println("Wrote " + writeData(carInventory, scanner) + " items to file");
                     continue;
                 case "5":
                     // TODO: Implement reading another JSON file
                     carInventory = readData(scanner);
+                    if (carInventory == null) {continue;}
+                    writeCompanyData(company, carInventory);
                     System.out.println("Reading JSON file...");
                     continue;
                 case "6":
@@ -285,29 +287,93 @@ public class Main {
         }
     }
 
-    private static void writeData(List<Map<String, Object>> data, Scanner sc) {
+    private static int writeData(List<Map<String, Object>> data, Scanner sc) {
         if (data == null) {
             System.out.println("No data to write.");
-            return;
+            return 0;
         }
         JSONIO jsonio = openFile('w', sc);
-        if (jsonio == null) {return;}
+        if (jsonio == null) {return 0;}
         try {
-            jsonio.write(data);
+            return jsonio.write(data);
         } catch (ReadWriteException e) {
             System.out.println(e.getMessage());
         }
+        return 0;
     }
+
+    private static List<Map<String, Object>> getDealershipData(Dealership dealership) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Vehicle vehicle: dealership.getInventory_Vehicles()) {
+            Map<String, Object> map = new HashMap<>();
+            map.put(JSONIO.getDealIDKey(), dealership.getDealerId());
+            map.put(JSONIO.getTypeKey(), vehicle.getVehicleType());
+            map.put(JSONIO.getManufacturerKey(), vehicle.getVehicleManufacturer());
+            map.put(JSONIO.getModelKey(), vehicle.getVehicleModel());
+            map.put(JSONIO.getVehicleIDKey(), vehicle.getVehicleId());
+            map.put(JSONIO.getPriceKey(), vehicle.getVehiclePrice());
+            map.put(JSONIO.getDateKey(), vehicle.getAcquisitionDate());
+            list.add(map);
+        }
+        return list;
+    }
+
+    private static List<Map<String, Object>> getCompanyData(Company company) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Dealership dealership : company.get_list_dealerships()) {
+            list.addAll(getDealershipData(dealership));
+        }
+        return list;
+    }
+
+    private static void writeCompanyData(Company company, List<Map<String, Object>> data) {
+        for (Map<String, Object> map: data) {
+            Dealership dealership = company.find_dealership(JSONIO.getDealIDVal(map));
+            if (dealership == null) {
+                dealership = new Dealership(JSONIO.getDealIDVal(map));
+                company.add_dealership(dealership);
+            }
+            Vehicle vehicle = createNewVehicle(
+                    JSONIO.getTypeVal(map),
+                    JSONIO.getVehicleIDVal(map)
+            );
+            if (vehicle == null) {continue;}
+            vehicle.setVehicleId( JSONIO.getVehicleIDVal(map) );
+            vehicle.setVehicleManufacturer( JSONIO.getManufacturerVal(map));
+            vehicle.setVehicleModel( JSONIO.getModelVal(map) );
+            vehicle.setVehicleId( JSONIO.getVehicleIDVal(map) );
+            vehicle.setVehiclePrice(JSONIO.getPriceVal(map));
+            vehicle.setAcquisitionDate(JSONIO.getDateVal(map));
+            dealership.add_incoming_vehicle(vehicle);
+        }
+    }
+
+
 
     // Method: Checks for new dealerships. Adds new dealerships to company.
     private static void populateDealerships(List<Map<String, Object>> inventory, Company company) {
         for (Map<String, Object> dealership : inventory) {
-            if (company.find_dealership((String) dealership.get(JSONIO.getDealIDKey())) == null) {
-                Dealership d = new Dealership((String) dealership.get(JSONIO.getDealIDKey()));
+            if (company.find_dealership( JSONIO.getDealIDVal(dealership)) == null) {
+                Dealership d = new Dealership(JSONIO.getDealIDVal(dealership));
                 company.add_dealership(d);
             }
         }
 
+    }
+
+    private static Vehicle createNewVehicle(String vehicleType, String ID) {
+        return switch (vehicleType) {
+            case "suv" -> new SUV();
+            case "sedan" -> new Sedan();
+            case "pickup" -> new Pickup();
+            case "sports car" -> new Sports_Car();
+            default -> {
+                System.out.println("\"" + vehicleType +
+                        "\" is not a supported vehicle type. " +
+                        "Vehicle ID: " + ID + "was not added");
+                yield null;
+            }
+        };
     }
 
     // Method: Populates vehicle attributes. Returns HashMap with vehicle(key) to dealership(value) associations.
@@ -316,41 +382,26 @@ public class Main {
         for (Map<String, Object> vehicle : inventory) {
             Vehicle currVehicle = null;
             boolean vehicleAdded = true;
-            switch ( (String)vehicle.get(JSONIO.getTypeKey()) ) {
-                case "suv":
-                    currVehicle = new SUV();
-                    break;
-                case "sedan":
-                    currVehicle = new Sedan();
-                    break;
-                case "pickup":
-                    currVehicle = new Pickup();
-                    break;
-                case "sports car":
-                    currVehicle = new Sports_Car();
-                    break;
-                default:
-                    System.out.println("\"" + vehicle.get(JSONIO.getTypeKey()) +
-                            "\" is not a supported vehicle type. " +
-                            "Vehicle ID: " + vehicle.get(JSONIO.getVehicleIDKey()) + "was not added");
-                    vehicleAdded = false;
-                    break;
-            }
+            currVehicle = createNewVehicle(
+                    JSONIO.getTypeVal(vehicle),
+                    JSONIO.getVehicleIDVal(vehicle));
+            if (currVehicle == null) {vehicleAdded = false;}
+
             // Checks if the vehicle was created and populates remaining attributes.
             if (vehicleAdded && currVehicle != null) {
-                currVehicle.setVehicleManufacturer( (String) vehicle.get(JSONIO.getManufacturerKey()) );
-                currVehicle.setVehicleModel( (String) vehicle.get(JSONIO.getModelKey()) );
-                currVehicle.setVehicleId( (String) vehicle.get(JSONIO.getVehicleIDKey()) );
-                currVehicle.setVehiclePrice( (long) vehicle.get(JSONIO.getPriceKey()) );
-                currVehicle.setAcquisitionDate( (long) vehicle.get(JSONIO.getDateKey()) );
+                currVehicle.setVehicleManufacturer( JSONIO.getManufacturerVal(vehicle) );
+                currVehicle.setVehicleModel( JSONIO.getModelVal(vehicle) );
+                currVehicle.setVehicleId( JSONIO.getVehicleIDVal(vehicle) );
+                currVehicle.setVehiclePrice( JSONIO.getPriceVal(vehicle) );
+                currVehicle.setAcquisitionDate( JSONIO.getDateVal(vehicle) );
 
-                Dealership dealership = company.find_dealership( (String) vehicle.get(JSONIO.getDealIDKey()) );
+                Dealership dealership = company.find_dealership( JSONIO.getDealIDVal(vehicle) );
                 if (dealership != null) {
                     vehicleToDealershipMap.put(currVehicle, dealership);
                 } else {
                     System.out.println("Unable to map Vehicle ID: " + vehicle.get(JSONIO.getVehicleIDKey())
-                            + " to " + vehicle.get(JSONIO.getDealIDKey()) + ". " +
-                            "Dealership " + vehicle.get(JSONIO.getDealIDKey()) + " does not exist.");
+                            + " to " + JSONIO.getDealIDVal(vehicle) + ". " +
+                            "Dealership " + JSONIO.getDealIDVal(vehicle) + " does not exist.");
                 }
             }
         }
