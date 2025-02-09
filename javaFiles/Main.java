@@ -1,7 +1,5 @@
 package javaFiles;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class Main {
@@ -9,78 +7,21 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         String userInput;
-        String filePath;
-        List<Map<String, Object>> carInventory = null;
+        List<Map<String, Object>> carInventory = new ArrayList<>();
         Company company = new Company("c_ID", "c_Name");
         Map<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
-        boolean filepath_empty = true; // flag variable to track whether a file has already been read
+
+        readData(scanner, carInventory);
+        if (carInventory.isEmpty()) {
+            System.out.println("No json file read. No data in company yet.");
+        } else {
+            System.out.println("Data loaded to queue, but not written to company");
+        }
 
         while (true) {
-
-            /** Should not be needed, when a user first opens the program,
-             *  they can just choose to load a file in the action loop.
-             *  They also need to be able to open multiple files.
-             * */
-            /*
-            if (filepath_empty){
-                System.out.print("Enter the JSON file name: ");
-                filePath = scanner.nextLine();
-
-                // Verifies and corrects file extension for .json
-                filePath = verifyFileExtension(filePath);
-
-                // Checks if the .json file exists. Prompts user for new file name if not found.
-                if (!fileExists(filePath)) {
-                    System.out.println("File \"" + filePath + "\" does not exist.");
-                    System.out.println("Try another file(Y/N)? ");
-                    do {
-                        userInput = scanner.nextLine();
-                    } while (!userInput.equalsIgnoreCase("y") && !userInput.equalsIgnoreCase("n"));
-
-                    if (userInput.equalsIgnoreCase("y")) {
-                        continue;
-                    } else {
-                        System.out.println("Goodbye.");
-                        break;
-                    }
-
-                }
-
-                System.out.println("Opening file... " + filePath);
-
-                // Retrieves data from the JSON file
-                carInventory = getInventory(filePath);
-
-                // Creates Company object
-                //Company company = new Company("c_ID", "c_Name");
-
-                // Checks for new dealerships. Adds new dealerships to company.
-                populateDealerships(carInventory, company);
-
-                // Output dealership list // TEST
-                System.out.println("Current dealerships...\n" + company.get_list_dealerships());
-
-                // Populates vehicle attributes. Returns Map with vehicle(key) to dealership(value) associations.
-                vehicleToDealershipMap = PopulateVehicleInformation(carInventory, company);
-
-                // Output key and value associations // TEST
-                System.out.println("Vehicle destinations...");
-                for (Map.Entry<Vehicle, Dealership> entry : vehicleToDealershipMap.entrySet()) {
-                    Vehicle vehicle = entry.getKey();
-                    Dealership dealership = entry.getValue();
-                    System.out.println("Vehicle ID: " + vehicle.getVehicleId() + " -> Dealership ID: " + dealership.getDealerId());
-                }
-
-                // while(true) {
-                // TODO: Prompt user for the following:
-
-                filepath_empty = false;
-            } */
-            // while(true) {
             // TODO: Prompt user for the following:
-
             System.out.println(
-                    "Select one of the following actions: \n" +
+                    "\nSelect one of the following actions: \n" +
                             "1) Send vehicles to dealership.\n" +
                             "2) Check pending vehicle deliveries. \n" +
                             "3) Change dealership vehicle receiving status. \n" +
@@ -92,9 +33,13 @@ public class Main {
 
             switch (userInput) {
                 case "1":
-                    // TODO: Implement sending vehicles to dealership
+                    if (carInventory.isEmpty()) {
+                        System.out.println("No vehicles in queue, nothing added.");
+                        continue;
+                    }
+                    writeCompanyData(company, carInventory);
                     System.out.println("Sending vehicles to dealership...");
-                    break;
+                    continue;
                 case "2":
                     // TODO: Implement checking pending vehicle deliveries
                     System.out.println("Checking pending vehicle deliveries...");
@@ -170,14 +115,12 @@ public class Main {
 
                 case "4":
                     // TODO: Implement writing dealership inventory to file
-                    carInventory = getCompanyData(company);
-                    System.out.println("Wrote " + writeData(carInventory, scanner) + " items to file");
+                    int itemsWritten =  writeData(getCompanyData(company), scanner);
+                    System.out.println("Wrote " + itemsWritten + " items to file");
                     continue;
                 case "5":
                     // TODO: Implement reading another JSON file
-                    carInventory = readData(scanner);
-                    if (carInventory == null) {continue;}
-                    writeCompanyData(company, carInventory);
+                    readData(scanner, carInventory);
                     System.out.println("Reading JSON file...");
                     continue;
                 case "6":
@@ -217,28 +160,6 @@ public class Main {
         scanner.close();
     }
 
-    // Method: Verifies that the filename provided exists
-    private static boolean fileExists (String filePath) {
-        filePath = verifyFileExtension(filePath);
-        return Files.exists(Paths.get(filePath));
-    }
-
-    // Method: Verifies and corrects file extension to include .json
-    private static String verifyFileExtension (String filePath) {
-        if (filePath.endsWith(".json")) {
-            return filePath;
-        }
-
-        int lastDotIndex = filePath.lastIndexOf('.');
-        if (lastDotIndex != -1) {
-            filePath = filePath.substring(0, lastDotIndex) + ".json";
-        } else {
-            filePath += ".json";
-        }
-
-        return filePath;
-    }
-
     private static JSONIO openFile(char mode, Scanner sc) {
         String path;
         JSONIO jsonio = null;
@@ -276,14 +197,13 @@ public class Main {
         return jsonio;
     }
 
-    private static List<Map<String, Object>> readData(Scanner sc) {
+    private static void readData(Scanner sc, List<Map<String, Object>> list) {
         JSONIO jsonio = openFile('r', sc);
-        if (jsonio == null) {return null;}
+        if (jsonio == null) {return;}
         try {
-            return jsonio.read();
+            list.addAll(jsonio.read());
         } catch (ReadWriteException e) {
             System.out.println(e.getMessage());
-            return null;
         }
     }
 
@@ -327,6 +247,7 @@ public class Main {
     }
 
     private static void writeCompanyData(Company company, List<Map<String, Object>> data) {
+        List<Map<String, Object>> accepted = new ArrayList<>();
         for (Map<String, Object> map: data) {
             Dealership dealership = company.find_dealership(JSONIO.getDealIDVal(map));
             if (dealership == null) {
@@ -344,8 +265,14 @@ public class Main {
             vehicle.setVehicleId( JSONIO.getVehicleIDVal(map) );
             vehicle.setVehiclePrice(JSONIO.getPriceVal(map));
             vehicle.setAcquisitionDate(JSONIO.getDateVal(map));
+
+            if (dealership.getStatus_AcquiringVehicles()) {
+                accepted.add(map);
+            }
             dealership.add_incoming_vehicle(vehicle);
         }
+        data.removeAll(accepted);
+
     }
 
 
