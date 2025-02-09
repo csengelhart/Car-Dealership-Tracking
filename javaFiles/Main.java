@@ -2,19 +2,7 @@ package javaFiles;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-
-// **REMOVE LATER**
-// 0.dealership_id
-// 1.vehicle_type
-// 2.vehicle_manufacturer
-// 3.vehicle_model
-// 4.vehicle_id
-// 5.price
-// 6.acquisition_date
+import java.util.*;
 
 public class Main {
 
@@ -22,9 +10,9 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         String userInput;
         String filePath;
-        String[][] carInventory;
+        List<Map<String, Object>> carInventory;
         Company company = new Company("c_ID", "c_Name");
-        HashMap<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
+        Map<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
         boolean filepath_empty = true; // flag variable to track whether a file has already been read
 
         while (true) {
@@ -67,7 +55,7 @@ public class Main {
                 // Output dealership list // TEST
                 System.out.println("Current dealerships...\n" + company.get_list_dealerships());
 
-                // Populates vehicle attributes. Returns HashMap with vehicle(key) to dealership(value) associations.
+                // Populates vehicle attributes. Returns Map with vehicle(key) to dealership(value) associations.
                 vehicleToDealershipMap = PopulateVehicleInformation(carInventory, company);
 
                 // Output key and value associations // TEST
@@ -196,7 +184,7 @@ public class Main {
             // TODO: Send vehicles to dealerships
             ArrayList<Vehicle> vehiclesAddedList = new ArrayList<>();
             for (Map.Entry<Vehicle, Dealership> vehicleToDealership : vehicleToDealershipMap.entrySet()) {
-                if (vehicleToDealership.getValue().getStatus_AcquiringVehicles() == true) {
+                if (vehicleToDealership.getValue().getStatus_AcquiringVehicles()) {
                     vehicleToDealership.getValue().add_incoming_vehicle(vehicleToDealership.getKey());
                     vehiclesAddedList.add(vehicleToDealership.getKey());
                 }
@@ -243,10 +231,10 @@ public class Main {
     }
 
     // Method: Checks for new dealerships. Adds new dealerships to company.
-    private static void populateDealerships(String[][] inventory, Company company) {
-        for (String[] dealership : inventory) {
-            if (company.find_dealership(dealership[0]) == null) {
-                Dealership d = new Dealership(dealership[0]);
+    private static void populateDealerships(List<Map<String, Object>> inventory, Company company) {
+        for (Map<String, Object> dealership : inventory) {
+            if (company.find_dealership((String) dealership.get(JSONIO.getDealIDKey())) == null) {
+                Dealership d = new Dealership((String) dealership.get(JSONIO.getDealIDKey()));
                 company.add_dealership(d);
             }
         }
@@ -254,12 +242,12 @@ public class Main {
     }
 
     // Method: Populates vehicle attributes. Returns HashMap with vehicle(key) to dealership(value) associations.
-    private static HashMap<Vehicle, Dealership> PopulateVehicleInformation(String[][] inventory, Company company) {
-        HashMap<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
-        for (String[] vehicle : inventory) {
+    private static Map<Vehicle, Dealership> PopulateVehicleInformation(List<Map<String, Object>> inventory, Company company) {
+        Map<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
+        for (Map<String, Object> vehicle : inventory) {
             Vehicle currVehicle = null;
             boolean vehicleAdded = true;
-            switch (vehicle[1]) {
+            switch ( (String)vehicle.get(JSONIO.getTypeKey()) ) {
                 case "suv":
                     currVehicle = new SUV();
                     break;
@@ -273,25 +261,27 @@ public class Main {
                     currVehicle = new Sports_Car();
                     break;
                 default:
-                    System.out.println("\"" + vehicle[1] + "\" is not a supported vehicle type. " +
-                            "Vehicle ID: " + vehicle[4] + "was not added");
+                    System.out.println("\"" + vehicle.get(JSONIO.getTypeKey()) +
+                            "\" is not a supported vehicle type. " +
+                            "Vehicle ID: " + vehicle.get(JSONIO.getVehicleIDKey()) + "was not added");
                     vehicleAdded = false;
                     break;
             }
             // Checks if the vehicle was created and populates remaining attributes.
             if (vehicleAdded && currVehicle != null) {
-                currVehicle.setVehicleManufacturer(vehicle[2]);
-                currVehicle.setVehicleModel(vehicle[3]);
-                currVehicle.setVehicleId(vehicle[4]);
-                currVehicle.setVehiclePrice(Double.parseDouble(vehicle[5]));
-                currVehicle.setAcquisitionDate(Long.parseLong(vehicle[6]));
+                currVehicle.setVehicleManufacturer( (String) vehicle.get(JSONIO.getManufacturerKey()) );
+                currVehicle.setVehicleModel( (String) vehicle.get(JSONIO.getModelKey()) );
+                currVehicle.setVehicleId( (String) vehicle.get(JSONIO.getVehicleIDKey()) );
+                currVehicle.setVehiclePrice( (long) vehicle.get(JSONIO.getPriceKey()) );
+                currVehicle.setAcquisitionDate( (long) vehicle.get(JSONIO.getDateKey()) );
 
-                Dealership dealership = company.find_dealership(vehicle[0]);
+                Dealership dealership = company.find_dealership( (String) vehicle.get(JSONIO.getDealIDKey()) );
                 if (dealership != null) {
                     vehicleToDealershipMap.put(currVehicle, dealership);
                 } else {
-                    System.out.println("Unable to map Vehicle ID: " + vehicle[4] + " to " + vehicle[0] + ". " +
-                            "Dealership " + vehicle[0] + " does not exist.");
+                    System.out.println("Unable to map Vehicle ID: " + vehicle.get(JSONIO.getVehicleIDKey())
+                            + " to " + vehicle.get(JSONIO.getDealIDKey()) + ". " +
+                            "Dealership " + vehicle.get(JSONIO.getDealIDKey()) + " does not exist.");
                 }
             }
         }
@@ -299,7 +289,7 @@ public class Main {
     }
 
     // Method: Reads data from a JSON file.
-    private static String[][] getInventory(String filePath) {
+    private static List<Map<String, Object>> getInventory(String filePath) {
         try {
             JSONIO jsonData = new JSONIO(filePath, 'r');
             return jsonData.read();

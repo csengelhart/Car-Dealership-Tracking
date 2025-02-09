@@ -5,7 +5,16 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
+import java.util.Objects;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+
 
 /**
  * A class that reads and writes to JSON files
@@ -16,7 +25,7 @@ public class JSONIO
 {
     private final File file;
     private final char mode;
-    private final static String[] keyOrder = {
+    private final static String[] keys = {
             "dealership_id", "vehicle_type",
             "vehicle_manufacturer", "vehicle_model",
             "vehicle_id", "price", "acquisition_date" };
@@ -32,7 +41,12 @@ public class JSONIO
      */
     public JSONIO(String filePath, char mode) throws ReadWriteException {
         this.mode = getMode(mode);
-        this.file = new File(filePath);
+        if (filePath.endsWith(".json")) {
+            this.file = new File(filePath);
+        } else {
+            throw new ReadWriteException("filePath \"" + filePath +"\" is not a .json file. "
+                                        + "Make sure to include .json at the end for filePath.");
+        }
     }
 
     /**
@@ -57,25 +71,44 @@ public class JSONIO
     }
 
     /**
-     * Returns keyOrder, which is a list of Strings that correspond
-     * to the index of the corresponding variable index in input and
-     * output String[] for the read and write class.
-     *
-     * @return The
+     * Returns the given key. Helps avoid repeating / misspelling.
      */
-    public static String[] getKeyOrder() {
-        return keyOrder;
+    public static String getDealIDKey() {       return keys[0];}
+    public static String getTypeKey() {         return keys[1];}
+    public static String getManufacturerKey() { return keys[2];}
+    public static String getModelKey() {           return keys[3];}
+    public static String getVehicleIDKey() {    return keys[4];}
+    public static String getPriceKey() {        return keys[5];}
+    public static String getDateKey() {         return keys[6];}
+
+    /**
+     * Takes a JSONObject and creates and returns a Map. Fills the Map with the
+     * data from the JSONObject with the same keys as keys. If any keys are absent,
+     * null is returned.
+     *
+     * @param jObj The JSONObject that data is being extracted from.
+     */
+    private Map<String, Object> readJSONObject(JSONObject jObj) {
+        Map<String, Object> map = new HashMap<>();
+
+        for (String key : keys) {
+            Object dataPoint = jObj.get(key);
+            if (dataPoint == null) {return null;}
+            map.put(key, dataPoint);
+
+        }
+        return map;
     }
 
     /**
      * Reads and returns the data stored in the file of this object.
      *
-     * @return An array of String[] that correspond to the array of data stored
-     *         in the JSON file for this object. The String[] has data in the
-     *         indexes represented by keyOrder.
+     * @return A List of Map<String, Object>s that correspond to the
+     *         JSONArray of data stored in the JSON file for this object.
+     *         The Map has data in the same keys as keys.
      * @throws ReadWriteException Thrown if not in read ('r') mode.
      */
-    public String[][] read() throws ReadWriteException {
+    public List<Map<String, Object>> read() throws ReadWriteException {
         if (mode != 'r') {
             throw new ReadWriteException("Must be mode 'r', not mode '" + mode + "'.");
         }
@@ -94,54 +127,57 @@ public class JSONIO
         assert jFile != null;
 
         jArray = (JSONArray)jFile.get("car_inventory");
-        String[] keyOrder = getKeyOrder();
-        String[][] output =  new String[jArray.size()][keyOrder.length];
 
-        for (int i = 0; i < jArray.size(); i++) {
-            JSONObject jObj = (JSONObject)jArray.get(i);
-            for (int j = 0; j < keyOrder.length; j++) {
-                String key = keyOrder[j];
-                Object dataPoint = jObj.get(key);
-                if (dataPoint instanceof Long) {
-                    output[i][j] = ( (Long) dataPoint ).toString();
-                } else {
-                    output[i][j] = (String) dataPoint;
-                }
-            }
+        List< Map<String, Object> > maps = new ArrayList<>();
+
+        for (Object jObj : jArray) {
+            Map<String, Object> map = readJSONObject((JSONObject) jObj);
+            if (map != null) {maps.add(map);}
         }
 
-        return output;
+        return maps;
     }
 
     /**
-     * Takes an array of String[] to write to the file stored in this object.
+     * Takes a Map<String, Object> of data with the same keys as keys
+     * and converts it to a JSONObject and returns it.
      *
-     * @param data An array of an array of Strings to write to a file.
-     *             The array of String should be in the order represented by keyOrder.
+     * @param data The Map of items to be ordered in a JSONObject with the keys for
+     *             the data the same as the keys in keys.
+     * @return The newly created JSONObject
+     */
+    private JSONObject makeJSONObject(Map<String, Object> data) {
+        JSONObject jObj = new JSONObject();
+        for (String key : keys) {
+            Object dataPoint = data.get(key);
+            if (dataPoint == null) {return null;}
+            jObj.put(key, dataPoint);
+        }
+        return jObj;
+    }
+
+    /**
+     * Takes a List of Maps to write to the file stored in this object.
+     *
+     * @param data List of Maps to write to a file.
+     *             The array of String should have the keys in key.
      * @return The number of entries written to the file
      * @throws ReadWriteException Thrown if not in write ('w') mode.
      */
-    public int write(String[][] data) throws ReadWriteException {
+    public int write(List<Map<String, Object>> data) throws ReadWriteException {
         int added = 0;
         if (mode != 'w') {
             throw new ReadWriteException("Must be mode 'w', not mode '" + mode + "'.");
         }
 
-        String[] keyOrder = getKeyOrder();
-
         JSONArray jArray = new JSONArray();
-        for (String[] carData : data) {
-            if (carData.length == keyOrder.length) {
-                JSONObject jObj = new JSONObject();
-                for (int i = 0; i < keyOrder.length; i++) {
-                    Object dataPoint = carData[i];
-                    if (i >= keyOrder.length - 2) {
-                        dataPoint = Long.parseLong((String) dataPoint);
-                    }
-                    jObj.put(keyOrder[i], dataPoint);
+        for (Map<String, Object> carData : data) {
+            if (carData.size() == keys.length) {
+                JSONObject jObj = makeJSONObject(carData);
+                if (jObj != null) {
+                    jArray.add(jObj);
+                    added++;
                 }
-                jArray.add(jObj);
-                added++;
             }
         }
 
@@ -159,14 +195,64 @@ public class JSONIO
         return added;
     }
 
+    /**
+     * Opens a file chooser dialog to allow the user to select a JSON file.
+     * The file chooser will start in the current user's working directory
+     * and will filter files to only show those with a ".json" extension.
+     *
+     * @return The selected JSON file if the user selects a file and confirms the dialog,
+     *         or null if the user cancels or closes the dialog without selecting a file.
+     *
+     * @author Christopher Engelhart
+     */
+    public static File selectJsonFile() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("JSON Files", "json"));
+        int result = fileChooser.showOpenDialog(null);
+        return result == 0 ? fileChooser.getSelectedFile() : null;
+    }
+
+    /**
+     * Opens a file chooser dialog to allow the user to select a JSON file.
+     * The file chooser will start in the current user's working directory
+     * and will filter files to only show those with a ".json" extension.
+     *
+     * @return The selected path to the JSON file if the user selects a file and confirms
+     *         the dialog, or null if the user cancels or closes the dialog without
+     *         selecting a file.
+     */
+    public static String selectJsonFilePath() {
+        File file = selectJsonFile();
+        if (file == null) {return null;}
+        return file.toString();
+    }
+
     // for testing purposes
     public static void main(String[] args) {
         try {
-            JSONIO jReadExample = new JSONIO("Car-Dealership-Tracking/inventory.json", 'r');
-            JSONIO jWriteExample = new JSONIO("Car-Dealership-Tracking/output.json", 'w');
-            String[][] read = jReadExample.read();
-            if (jWriteExample.write(read) == read.length) {
+            System.out.println("Select an inventory file to process");
+            String input_filePath = Objects.requireNonNull(selectJsonFile()).toString();
+
+            // input file
+            File file = new File(input_filePath);
+            if (!file.exists() || file.length() == 0) {
+                throw new ReadWriteException("The file does not exist or is empty.");
+            }
+
+            JSONIO jReadExample = new JSONIO(input_filePath, 'r');
+            List<Map<String, Object>> read = jReadExample.read();
+
+            System.out.println("Create a name and choose location to save output file");
+            String output_filePath = Objects.requireNonNull(selectJsonFile()).toString();
+
+            JSONIO jWriteExample = new JSONIO(output_filePath, 'w');
+
+            int jObjsRead = jWriteExample.write(read);
+            if (jObjsRead == read.size()) {
                 System.out.println("Added all files.");
+            } else {
+                System.out.println("Added " + jObjsRead + "/" + read.size() + " items.");
             }
         } catch (ReadWriteException e) {
             System.out.println(e.getMessage());
