@@ -56,7 +56,7 @@ public class JSONIO
      * @return The correct form of the char representation (read 'r', write 'w')
      * @throws ReadWriteException Thrown if the mode is an invalid char
      */
-    private char getMode(char mode)  throws ReadWriteException{
+    public static char getMode(char mode)  throws ReadWriteException{
         mode = Character.toLowerCase(mode);
         char[] valid_modes = {'r', 'w'};
         for (char mode_lower : valid_modes) {
@@ -65,7 +65,7 @@ public class JSONIO
             }
         }
 
-        String message = "Mode '" + mode + //original mode, not converted
+        String message = "Mode '" + mode +
                 "' is not in {'r', 'R', 'w', 'W'}, file not opened.";
         throw new ReadWriteException(message);
     }
@@ -76,7 +76,7 @@ public class JSONIO
     public static String getDealIDKey() {       return keys[0];}
     public static String getTypeKey() {         return keys[1];}
     public static String getManufacturerKey() { return keys[2];}
-    public static String getModelKey() {           return keys[3];}
+    public static String getModelKey() {        return keys[3];}
     public static String getVehicleIDKey() {    return keys[4];}
     public static String getPriceKey() {        return keys[5];}
     public static String getDateKey() {         return keys[6];}
@@ -258,5 +258,9 @@ public class JSONIO
             System.out.println(e.getMessage());
         }
 
+    }
+
+    public String toString() {
+        return "Opened file \"" + file.toString() + "\" in (" + mode + ") mode.";
     }
 }

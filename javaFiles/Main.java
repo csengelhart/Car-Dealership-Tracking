@@ -10,14 +10,19 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         String userInput;
         String filePath;
-        List<Map<String, Object>> carInventory;
+        List<Map<String, Object>> carInventory = null;
         Company company = new Company("c_ID", "c_Name");
         Map<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
         boolean filepath_empty = true; // flag variable to track whether a file has already been read
 
         while (true) {
 
-            if(filepath_empty){
+            /** Should not be needed, when a user first opens the program,
+             *  they can just choose to load a file in the action loop.
+             *  They also need to be able to open multiple files.
+             * */
+            /*
+            if (filepath_empty){
                 System.out.print("Enter the JSON file name: ");
                 filePath = scanner.nextLine();
 
@@ -70,7 +75,7 @@ public class Main {
                 // TODO: Prompt user for the following:
 
                 filepath_empty = false;
-            }
+            } */
             // while(true) {
             // TODO: Prompt user for the following:
 
@@ -80,7 +85,7 @@ public class Main {
                             "2) Check pending vehicle deliveries. \n" +
                             "3) Change dealership vehicle receiving status. \n" +
                             "4) Write dealership inventory to file.\n" +
-                            "5) Read another json file.\n" +
+                            "5) Read a json file.\n" +
                             "6) Exit program."
             );
             userInput = scanner.nextLine();
@@ -165,12 +170,14 @@ public class Main {
 
                 case "4":
                     // TODO: Implement writing dealership inventory to file
+                    writeData(carInventory, scanner);
                     System.out.println("Writing dealership inventory to file...");
-                    break;
+                    continue;
                 case "5":
                     // TODO: Implement reading another JSON file
-                    System.out.println("Reading another JSON file...");
-                    break;
+                    carInventory = readData(scanner);
+                    System.out.println("Reading JSON file...");
+                    continue;
                 case "6":
                     System.out.println("Exiting program...");
                     System.exit(0);
@@ -228,6 +235,68 @@ public class Main {
         }
 
         return filePath;
+    }
+
+    private static JSONIO openFile(char mode, Scanner sc) {
+        String path;
+        JSONIO jsonio = null;
+        char userInput;
+
+        try {
+            mode = JSONIO.getMode(mode);
+        } catch (ReadWriteException e) {
+            System.out.println("Mode '" + mode + "' is not valid, returning null.");
+            return null;
+        }
+
+        do {
+            System.out.print("Choose Path: ");
+            path = JSONIO.selectJsonFilePath();
+            try {
+                if (path != null) {
+                    System.out.println(path);
+                    jsonio = new JSONIO(path, mode);
+                } else {
+                    System.out.println("File chooser closed. No file opened.");
+                    return null;
+                }
+            } catch (ReadWriteException e) {
+                System.out.print("Path \"" + path + "\" is not a valid path.\n" +
+                        "Enter new path ('y' / 'n'): ");
+                userInput = Character.toLowerCase(sc.next().charAt(0));
+                while (userInput != 'y' && userInput != 'n') {
+                    System.out.println("Invalid input, try again (only 'y' or 'n' valid): ");
+                    userInput = Character.toLowerCase(sc.next().charAt(0));
+                }
+                if (userInput == 'n') {return null;}
+            }
+        } while (jsonio == null);
+        return jsonio;
+    }
+
+    private static List<Map<String, Object>> readData(Scanner sc) {
+        JSONIO jsonio = openFile('r', sc);
+        if (jsonio == null) {return null;}
+        try {
+            return jsonio.read();
+        } catch (ReadWriteException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    private static void writeData(List<Map<String, Object>> data, Scanner sc) {
+        if (data == null) {
+            System.out.println("No data to write.");
+            return;
+        }
+        JSONIO jsonio = openFile('w', sc);
+        if (jsonio == null) {return;}
+        try {
+            jsonio.write(data);
+        } catch (ReadWriteException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     // Method: Checks for new dealerships. Adds new dealerships to company.
