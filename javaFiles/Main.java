@@ -176,8 +176,6 @@ public class Main {
      *
      * @param sc   A {@link Scanner} object used to read user input from the console for path selection and retry prompts.
      * @return     A {@link JSONIO} object representing the opened file, or null if no valid file path is selected.
-     *
-     * @throws ReadWriteException if the mode passed is invalid or any error occurs when attempting to open the file.
      */
     private static JSONIO openFile(char mode, Scanner sc) {
         String path;
@@ -291,8 +289,6 @@ public class Main {
      * @param company
      * @return
      */
-
-
     private static List<Map<String, Object>> getCompanyData(Company company) {
         List<Map<String, Object>> list = new ArrayList<>();
         for (Dealership dealership : company.get_list_dealerships()) {
@@ -308,7 +304,7 @@ public class Main {
      * vehicle list. After processing, it removes the accepted vehicles from the inventory
      *
      * @param company The {@link Company} object that contains the dealerships
-     * @param inventory A map containing vehicles as keys and the corresponding dealership names (as Strings)
+     * @param inventory A map containing vehicles as keys and the corresponding dealership ID (as Strings)
      *                  as values. The vehicles in the inventory will be processed and moved based on
      *                  the status of their respective dealerships.
      */
