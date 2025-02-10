@@ -71,7 +71,7 @@ public class Main {
                         } else {
                             // Dealership not found, prompt user to retry or exit
                             System.out.println("Dealership ID not found.");
-                            System.out.println("Would you like to try again or return to the main menu? (Enter 'try' to retry, 'exit' to go back): ");
+                            System.out.println("Would you like to try again or return to the main menu? (Enter any key to retry or 'exit' to go back): ");
                             String retryInput = scanner.nextLine();
 
                             if (retryInput.equalsIgnoreCase("exit")) {
