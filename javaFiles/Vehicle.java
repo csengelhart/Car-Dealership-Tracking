@@ -1,5 +1,7 @@
 package javaFiles;
 
+import java.util.Date;
+
 /**
  Vehicle is an abstract class that defines a set of common attributes
  and behaviors for all vehicle types. This class serves as a blueprint for any
@@ -100,4 +102,20 @@ public abstract class Vehicle {
 
     public String getVehicleType() {return vehicleType;}
 
+    /**
+     * Creates and returns a String representation of the Vehicle
+     *
+     * @return A String representation of the Vehicle
+     *
+     * @author Dylan Browne
+     */
+    public String toString() {
+        Date date = new Date(acquisitionDate);
+        return  "Vehicle: " +  vehicleType +
+                "\nID: " + vehicleId +
+                "\nManufacturer " + vehicleManufacturer +
+                "\nModel: " + vehicleModel +
+                "\nPrice: $" + vehiclePrice +
+                "\nAcquired: " + date;
+    }
 }

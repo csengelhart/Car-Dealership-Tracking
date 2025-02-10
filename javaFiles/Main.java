@@ -42,8 +42,9 @@ public class Main {
                     continue;
                 case "2":
                     // TODO: Implement checking pending vehicle deliveries
+                    printPending(carInventory, company);
                     System.out.println("Checking pending vehicle deliveries...");
-                    break;
+                    continue;
                 case "3":
                     System.out.println("Changing dealership vehicle receiving status...");
 
@@ -289,7 +290,23 @@ public class Main {
 
     }
 
+    private static void printPending(Map<Vehicle, String> inventory, Company company) {
+        Dealership d;
+        for (Vehicle vehicle : inventory.keySet()) {
+            d = company.find_dealership(inventory.get(vehicle));
+            String open;
+            if (d == null) {
+                open = " has not been initiated (will be initiated as accepting Vehicles).";
+            } else if (d.getStatus_AcquiringVehicles()) {
+                open = " is accepting Vehicles.";
+            } else {
+                open = " is not accepting Vehicles.";
+            }
 
+            System.out.println(vehicle);
+            System.out.println("Dealership ID: " + inventory.get(vehicle) + open + "\n");
+        }
+    }
 
     // Method: Checks for new dealerships. Adds new dealerships to company.
     private static void populateDealerships(List<Map<String, Object>> inventory, Company company) {
