@@ -19,7 +19,7 @@ public class Main {
         }
 
         while (true) {
-            // TODO: Prompt user for the following:
+            // Prompt user for the following:
             System.out.println(
                     "\nSelect one of the following actions: \n" +
                             "1) Send vehicles to dealership.\n" +
@@ -29,14 +29,17 @@ public class Main {
                             "5) Read a json file.\n" +
                             "6) Exit program."
             );
+
             userInput = scanner.nextLine();
 
             switch (userInput) {
                 case "1":
+                    // if carInventory is empty, print message and return to menu
                     if (carInventory.isEmpty()) {
                         System.out.println("No vehicles in queue, nothing added.");
                         continue;
                     }
+
                     writeCompanyData(company, carInventory);
                     System.out.println("Sending vehicles to dealership...");
                     continue;
@@ -161,6 +164,21 @@ public class Main {
         scanner.close();
     }
 
+
+    /**
+     * Opens a JSON file based on the given mode and user input.
+     * This method allows the user to choose a JSON file and opens it in the specified mode (read or write).
+     * It will validate the file path and mode, and repeatedly prompt the user for a new path if an invalid path is entered.
+     * If a valid file path is found, a {@link JSONIO} instance is created with the path and mode passed to it and returned. If the user cancels the file chooser or
+     * enters an invalid path multiple times, the method returns null.
+     *
+     * @param mode A character representing the mode in which the file should be opened ('r' for read, 'w' for write).
+     *
+     * @param sc   A {@link Scanner} object used to read user input from the console for path selection and retry prompts.
+     * @return     A {@link JSONIO} object representing the opened file, or null if no valid file path is selected.
+     *
+     * @throws ReadWriteException if the mode passed is invalid or any error occurs when attempting to open the file.
+     */
     private static JSONIO openFile(char mode, Scanner sc) {
         String path;
         JSONIO jsonio = null;
@@ -267,6 +285,14 @@ public class Main {
         return list;
     }
 
+    /**
+     *
+     *
+     * @param company
+     * @return
+     */
+
+
     private static List<Map<String, Object>> getCompanyData(Company company) {
         List<Map<String, Object>> list = new ArrayList<>();
         for (Dealership dealership : company.get_list_dealerships()) {
@@ -275,6 +301,17 @@ public class Main {
         return list;
     }
 
+    /**
+     * This method processes the vehicle inventory and updates the dealership's incoming vehicles.
+     * It checks each vehicle in the provided inventory, finds the corresponding dealership, and if
+     * the dealership is acquiring vehicles, it adds the vehicle to the dealership's incoming
+     * vehicle list. After processing, it removes the accepted vehicles from the inventory
+     *
+     * @param company The {@link Company} object that contains the dealerships
+     * @param inventory A map containing vehicles as keys and the corresponding dealership names (as Strings)
+     *                  as values. The vehicles in the inventory will be processed and moved based on
+     *                  the status of their respective dealerships.
+     */
     private static void writeCompanyData(Company company, Map<Vehicle, String> inventory) {
         List<Vehicle> accepted = new ArrayList<>();
         for (Vehicle vehicle : inventory.keySet()) {
