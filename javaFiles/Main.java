@@ -214,6 +214,22 @@ public class Main {
         return jsonio;
     }
 
+
+    /**
+     * Populates an inventory map with vehicle data from a list of maps.
+     *
+     * This method iterates through a list of maps, each representing a vehicle's data.
+     * For each vehicle data map, it retrieves dealership information, creates a new
+     * Vehicle object, populates the vehicle's attributes, and adds the vehicle
+     * to the inventory map, associating it with the dealership ID.
+     *
+     * @param inventory A {@link Map} where the key is a {@link Vehicle} object and the value is the dealership ID (as a String).
+     *                  This map represents the inventory to be populated.
+     * @param data      A {@link List} of {@link Map} objects, where each map represents
+     *                  the data for a single vehicle.
+     * @param company   The {@link Company} object to which the dealerships belong.  This is used
+     *                  to find existing dealerships or create new {@link Dealership} objects.
+     */
     private static void dataToInventory(Map<Vehicle, String> inventory, List<Map<String, Object>> data, Company company) {
         for (Map<String, Object> map: data) {
             Dealership dealership = company.find_dealership(JSONIO.getDealIDVal(map));
