@@ -33,7 +33,7 @@ public class Main {
             userInput = scanner.nextLine();
 
             switch (userInput) {
-                case "1":
+                case "1": // send vehicles in queue to dealership(s)
                     // if carInventory is empty, print message and return to menu
                     if (carInventory.isEmpty()) {
                         System.out.println("No vehicles in queue, nothing added.");
@@ -44,7 +44,7 @@ public class Main {
                     System.out.println("Sending vehicles to dealership...");
                     continue;
                 case "2":
-                    // TODO: Implement checking pending vehicle deliveries
+                    // checking pending vehicle deliveries
                     printPending(carInventory, company);
                     System.out.println("Checking pending vehicle deliveries...");
                     continue;
@@ -94,19 +94,19 @@ public class Main {
                         if (userInput.equalsIgnoreCase("enable")) {
                             // Check if the dealership's vehicle receiving status is already enabled
                             if (dealer.getStatus_AcquiringVehicles()) {
-                                System.out.println("Dealership " + userInput + " is already set to receive vehicles.");
+                                System.out.println("Dealership " + dealer.getDealerId() + " is already set to receive vehicles.");
                             } else {
                                 // Enable vehicle receiving for the dealership
                                 dealer.enable_receiving_vehicle();
-                                System.out.println("Vehicle receiving status for dealership " + userInput + " has been enabled.");
+                                System.out.println("Vehicle receiving status for dealership " + dealer.getDealerId() + " has been enabled.");
                             }
                         } else if (userInput.equalsIgnoreCase("disable")) {
                             // Disable the vehicle receiving status
                             if (!dealer.getStatus_AcquiringVehicles()) {
-                                System.out.println("Dealership " + userInput + " is already set to not receive vehicles.");
+                                System.out.println("Dealership " + dealer.getDealerId()+ " is already set to not receive vehicles.");
                             } else {
                                 dealer.disable_receiving_vehicle();
-                                System.out.println("Vehicle receiving status for dealership " + userInput + " has been disabled.");
+                                System.out.println("Vehicle receiving status for dealership " + dealer.getDealerId() + " has been disabled.");
                             }
                         } else {
                             System.out.println("Invalid input. Please enter 'enable' or 'disable'.");
@@ -118,16 +118,16 @@ public class Main {
 
 
                 case "4":
-                    // TODO: Implement writing dealership inventory to file
+                    // writing dealership inventory to file
                     int itemsWritten =  writeData(getCompanyData(company), scanner);
                     System.out.println("Wrote " + itemsWritten + " items to file");
                     continue;
                 case "5":
-                    // TODO: Implement reading another JSON file
+                    // reading another JSON file
                     readData(scanner, carInventory, company);
                     System.out.println("Reading JSON file...");
                     continue;
-                case "6":
+                case "6": // exit program
                     System.out.println("Exiting program...");
                     System.exit(0);
                     break;
@@ -135,9 +135,8 @@ public class Main {
                     System.out.println("Invalid input. Please select a valid option.");
                     continue;
             }
-            //      Send to dealership, enable/disable receiving, save to file, read another file, exit program.
 
-            // TODO: Send vehicles to dealerships
+            // Send vehicles to dealerships
             ArrayList<Vehicle> vehiclesAddedList = new ArrayList<>();
             for (Map.Entry<Vehicle, Dealership> vehicleToDealership : vehicleToDealershipMap.entrySet()) {
                 if (vehicleToDealership.getValue().getStatus_AcquiringVehicles()) {
@@ -152,13 +151,6 @@ public class Main {
                 vehicleToDealershipMap.remove(vehicle);
             }
 
-            // TODO: Enable/disable dealership accepting vehicles
-            //      company.find_dealership("12513").disable_receiving_vehicle();
-            //      company.find_dealership("12513").enable_receiving_vehicle();
-
-            // TODO: Write vehicle inventory from dealership to JSON file.
-            //      Implement writeInventory method
-            // }
             break;
         }
         scanner.close();
@@ -435,7 +427,22 @@ public class Main {
         }
     }
 
-    // Method: Checks for new dealerships. Adds new dealerships to company.
+
+    /**
+     * Adds new dealerships to the company based on inventory data.
+     *
+     * This method iterates through a list of maps, where each map represents
+     * vehicle data including the dealership ID of the dealership the vehicle belongs to.
+     * It checks if a dealership with the given ID already exists in the
+     * company. If a dealership does not exist, it creates a new {@link Dealership}
+     * object using the dealership ID from the map and adds it to the company.
+     * If the Dealership object already exist in the {@link Company} object the method
+     * does nothing.
+     *
+     * @param inventory A {@link List} of {@link Map} objects, where each map contains
+     *                  vehicle data.
+     * @param company   The {@link Company} object to which new dealerships will be added.
+     */
     private static void populateDealerships(List<Map<String, Object>> inventory, Company company) {
         for (Map<String, Object> dealership : inventory) {
             if (company.find_dealership( JSONIO.getDealIDVal(dealership)) == null) {
@@ -446,6 +453,22 @@ public class Main {
 
     }
 
+
+    /**
+     * Creates a new Vehicle object based on the given type.
+     *
+     * This method acts as a factory for creating different types of vehicles.  It uses
+     * a switch statement to determine which concrete Vehicle class to instantiate
+     * based on the provided argument vehicleType
+     *
+     * @param vehicleType The type of vehicle to create ("suv", "sedan", "pickup", "sports car").
+     * @param ID          The ID of the vehicle. This is used in the error message if the
+     *                    vehicle type is not supported.
+     * @return A new {@link Vehicle} object of the specified type, or  null if
+     *         the vehicleType is not supported. If null is returned, a
+     *         message is printed to the console indicating the unsupported type and
+     *         the vehicle ID was not added.
+     */
     private static Vehicle createNewVehicle(String vehicleType, String ID) {
         return switch (vehicleType) {
             case "suv" -> new SUV();
@@ -461,7 +484,26 @@ public class Main {
         };
     }
 
-    // Method: Populates vehicle attributes. Returns HashMap with vehicle(key) to dealership(value) associations.
+/**
+ * Populates vehicle attributes and associates vehicles with dealerships.
+ *
+ * This method processes a list of maps, where each map represents a vehicle.
+ * It attempts to create a {@link Vehicle} object for each map. If the vehicle creation
+ * is successful, it populates the vehicle's attributes using data from the map.
+ * It then finds the corresponding {@link Dealership} for the vehicle based on the
+ * dealership ID in the map and associates the vehicle with the dealership in a map.
+ * If a dealership is not found for a vehicle, a message is printed to the console.
+ *
+ * @param inventory A {@link List} of {@link Map} objects, where each map potentially
+ *                  contains data for a vehicle. These maps have
+ *                  keys that can be used to retrieve vehicle attributes and
+ *                  the dealership ID.
+ * @param company   The {@link Company} object used to look up dealerships based on
+ *                  dealership IDs.
+ * @return A {@link Map} where the key is a {@link Vehicle} object and the value
+ *         is the associated {@link Dealership} object.  Returns an empty map if no
+ *         vehicles are created or if no dealerships are found.
+ */
     private static Map<Vehicle, Dealership> PopulateVehicleInformation(List<Map<String, Object>> inventory, Company company) {
         Map<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
         for (Map<String, Object> vehicle : inventory) {
@@ -493,7 +535,21 @@ public class Main {
         return vehicleToDealershipMap;
     }
 
-    // Method: Reads data from a JSON file.
+
+    /**
+     * Reads vehicle data from a JSON file.
+     *
+     * This method attempts to read vehicle information from the JSON file specified
+     * by the given file path. It uses a {@link JSONIO} object to perform the file
+     * reading and parsing.
+     *
+     * @param filePath The path to the JSON file containing the vehicle data.
+     * @return A {@link List} of {@link Map} objects, where each {@link Map} represents
+     *         a vehicle and contains its attributes as key-value pairs. Returns
+     *         null if an error occurs during file reading or parsing, or if the
+     *         JSON file is invalid. Error messages are printed to the console in such
+     *         cases.
+     */
     private static List<Map<String, Object>> getInventory(String filePath) {
         try {
             JSONIO jsonData = new JSONIO(filePath, 'r');
@@ -503,10 +559,4 @@ public class Main {
             return null;
         }
     }
-
-    // Method: Writes data to a JSON file.
-    private static void writeInventory(Dealership dealership) {
-        // TODO: Implement writing .JSON file for dealership inventory. using JSONIO class.
-    }
-
 }
