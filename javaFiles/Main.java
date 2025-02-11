@@ -9,7 +9,6 @@ public class Main {
         String userInput;
         Map<Vehicle, String> carInventory = new HashMap<>(); // Vehicle, dealershipID
         Company company = new Company("c_ID", "c_Name");
-        Map<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
 
         readData(scanner, carInventory, company);
         if (carInventory.isEmpty()) {
@@ -177,21 +176,6 @@ public class Main {
                     continue;
             }
 
-            // Send vehicles to dealerships
-            ArrayList<Vehicle> vehiclesAddedList = new ArrayList<>();
-            for (Map.Entry<Vehicle, Dealership> vehicleToDealership : vehicleToDealershipMap.entrySet()) {
-                if (vehicleToDealership.getValue().getStatus_AcquiringVehicles()) {
-                    vehicleToDealership.getValue().add_incoming_vehicle(vehicleToDealership.getKey());
-                    vehiclesAddedList.add(vehicleToDealership.getKey());
-                }
-            }
-            // Removes vehicles that were successfully added to a dealership.
-            // vehicleToDealershipMap provides a list of vehicles not added.
-            // This can be used to retry adding vehicles when the dealership enables receiving vehicles.
-            for (Vehicle vehicle : vehiclesAddedList) {
-                vehicleToDealershipMap.remove(vehicle);
-            }
-
             break;
         }
         scanner.close();
@@ -200,7 +184,7 @@ public class Main {
 
     /**
      * Opens a JSON file based on the given mode and user input.
-     *
+     * <p>
      * This method allows the user to choose a JSON file and opens it in the specified mode (read or write).
      * It will validate the file path and mode, and repeatedly prompt the user for a new path if an invalid path is entered.
      * If a valid file path is found, a {@link JSONIO} instance is created with the path and mode passed to it and returned. If the user cancels the file chooser or
@@ -227,7 +211,7 @@ public class Main {
             path = JSONIO.selectJsonFilePath();
             try {
                 if (path != null) {
-                    System.out.println(path);
+                    System.out.println(path + "\n");
                     jsonio = new JSONIO(path, mode);
                 } else {
                     System.out.println("File chooser closed. No file opened.");
@@ -250,7 +234,7 @@ public class Main {
 
     /**
      * Populates an inventory map with vehicle data from a list of maps.
-     *
+     * <p>
      * This method iterates through a list of maps, each representing a vehicle's data.
      * For each vehicle data map, it retrieves dealership information, creates a new
      * Vehicle object, populates the vehicle's attributes, and adds the vehicle
@@ -291,7 +275,7 @@ public class Main {
 
     /**
      * Reads data from a JSON file and populates an inventory.
-     *
+     * <p>
      * This method opens a JSON file in "read" mode ('r') using the provided {@link Scanner}
      * and a {@link JSONIO} object. If the file cannot be opened (e.g., file not found, invalid
      * permissions), the method returns without doing anything. Otherwise, it reads the JSON
@@ -299,7 +283,7 @@ public class Main {
      * This data is then used to populate the provided inventory map and associate
      * vehicles with their respective dealerships within the given company.
      *
-     * @param sc  A {@link Scanner} object used by {@link #openFile(char, Scanner)} to read user input from the console for path 
+     * @param sc  A {@link Scanner} object used by {@link #openFile(char, Scanner)} to read user input from the console for path
      *            selection and retry prompts.
      * @param inventory A {@link Map} where the key is a {@link Vehicle} object and the value
      *                  is the dealership ID (a String). This map represents the inventory
@@ -325,7 +309,7 @@ public class Main {
 
     /**
      * Writes data to the JSON file contained by {@link JSONIO} object.
-     *
+     * <p>
      * This method opens a JSON file contained in {@link JSONIO} object
      * in write ("w") mode and writes data in the form of a {@link List}
      * of {@link Map} which consists of String keys with Object values to the file.
@@ -358,7 +342,7 @@ public class Main {
 
     /**
      * Retrieves vehicle data for a given dealership.
-     *
+     * <p>
      * This method generates a list of maps, where each map represents a vehicle
      * in the specified dealership's inventory.  Each map contains key-value pairs
      * representing the vehicle's attributes.
@@ -388,7 +372,7 @@ public class Main {
 
     /**
      * Retrieves vehicle data for all dealerships within a company.
-     *
+     * <p>
      * This method gathers vehicle information from all dealerships associated with the
      * given company and compiles it into a single list of maps. Each map in the list
      * represents a vehicle and contains its attributes.
@@ -439,7 +423,7 @@ public class Main {
 
     /**
      * Prints information about pending vehicle deliveries and dealership status.
-     *
+     * <p>
      * This method iterates through the provided inventory of vehicles and prints
      * details about each vehicle, including its associated dealership and the
      * dealership's current vehicle receiving status (accepting or not accepting vehicles).
@@ -468,36 +452,9 @@ public class Main {
         }
     }
 
-
-    /**
-     * Adds new dealerships to the company based on inventory data.
-     *
-     * This method iterates through a list of maps, where each map represents
-     * vehicle data including the dealership ID of the dealership the vehicle belongs to.
-     * It checks if a dealership with the given ID already exists in the
-     * company. If a dealership does not exist, it creates a new {@link Dealership}
-     * object using the dealership ID from the map and adds it to the company.
-     * If the Dealership object already exist in the {@link Company} object the method
-     * does nothing.
-     *
-     * @param inventory A {@link List} of {@link Map} objects, where each map contains
-     *                  vehicle data.
-     * @param company   The {@link Company} object to which new dealerships will be added.
-     */
-    private static void populateDealerships(List<Map<String, Object>> inventory, Company company) {
-        for (Map<String, Object> dealership : inventory) {
-            if (company.find_dealership( JSONIO.getDealIDVal(dealership)) == null) {
-                Dealership d = new Dealership(JSONIO.getDealIDVal(dealership));
-                company.add_dealership(d);
-            }
-        }
-
-    }
-
-
     /**
      * Creates a new Vehicle object based on the given type.
-     *
+     * <p>
      * This method acts as a factory for creating different types of vehicles.  It uses
      * a switch statement to determine which concrete Vehicle class to instantiate
      * based on the provided argument vehicleType
@@ -523,81 +480,5 @@ public class Main {
                 yield null;
             }
         };
-    }
-
-/**
- * Populates vehicle attributes and associates vehicles with dealerships.
- *
- * This method processes a list of maps, where each map represents a vehicle.
- * It attempts to create a {@link Vehicle} object for each map. If the vehicle creation
- * is successful, it populates the vehicle's attributes using data from the map.
- * It then finds the corresponding {@link Dealership} for the vehicle based on the
- * dealership ID in the map and associates the vehicle with the dealership in a map.
- * If a dealership is not found for a vehicle, a message is printed to the console.
- *
- * @param inventory A {@link List} of {@link Map} objects, where each map potentially
- *                  contains data for a vehicle. These maps have
- *                  keys that can be used to retrieve vehicle attributes and
- *                  the dealership ID.
- * @param company   The {@link Company} object used to look up dealerships based on
- *                  dealership IDs.
- * @return A {@link Map} where the key is a {@link Vehicle} object and the value
- *         is the associated {@link Dealership} object.  Returns an empty map if no
- *         vehicles are created or if no dealerships are found.
- */
-    private static Map<Vehicle, Dealership> PopulateVehicleInformation(List<Map<String, Object>> inventory, Company company) {
-        Map<Vehicle, Dealership> vehicleToDealershipMap = new HashMap<>();
-        for (Map<String, Object> vehicle : inventory) {
-            Vehicle currVehicle = null;
-            boolean vehicleAdded = true;
-            currVehicle = createNewVehicle(
-                    JSONIO.getTypeVal(vehicle),
-                    JSONIO.getVehicleIDVal(vehicle));
-            if (currVehicle == null) {vehicleAdded = false;}
-
-            // Checks if the vehicle was created and populates remaining attributes.
-            if (vehicleAdded && currVehicle != null) {
-                currVehicle.setVehicleManufacturer( JSONIO.getManufacturerVal(vehicle) );
-                currVehicle.setVehicleModel( JSONIO.getModelVal(vehicle) );
-                currVehicle.setVehicleId( JSONIO.getVehicleIDVal(vehicle) );
-                currVehicle.setVehiclePrice( JSONIO.getPriceVal(vehicle) );
-                currVehicle.setAcquisitionDate( JSONIO.getDateVal(vehicle) );
-
-                Dealership dealership = company.find_dealership( JSONIO.getDealIDVal(vehicle) );
-                if (dealership != null) {
-                    vehicleToDealershipMap.put(currVehicle, dealership);
-                } else {
-                    System.out.println("Unable to map Vehicle ID: " + vehicle.get(JSONIO.getVehicleIDKey())
-                            + " to " + JSONIO.getDealIDVal(vehicle) + ". " +
-                            "Dealership " + JSONIO.getDealIDVal(vehicle) + " does not exist.");
-                }
-            }
-        }
-        return vehicleToDealershipMap;
-    }
-
-
-    /**
-     * Reads vehicle data from a JSON file.
-     *
-     * This method attempts to read vehicle information from the JSON file specified
-     * by the given file path. It uses a {@link JSONIO} object to perform the file
-     * reading and parsing.
-     *
-     * @param filePath The path to the JSON file containing the vehicle data.
-     * @return A {@link List} of {@link Map} objects, where each {@link Map} represents
-     *         a vehicle and contains its attributes as key-value pairs. Returns
-     *         null if an error occurs during file reading or parsing, or if the
-     *         JSON file is invalid. Error messages are printed to the console in such
-     *         cases.
-     */
-    private static List<Map<String, Object>> getInventory(String filePath) {
-        try {
-            JSONIO jsonData = new JSONIO(filePath, 'r');
-            return jsonData.read();
-        } catch (ReadWriteException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
     }
 }
