@@ -50,72 +50,14 @@ public class Main {
                 case "3":
                     System.out.println("Changing dealership vehicle receiving status...");
 
-
-                    Dealership dealer = null; // will hold Dealership object
-                    boolean validDealership = false; // controls loop to find dealership
-
-                    while (!validDealership) {
-                        System.out.println("Enter the ID of the dealership or back to return to menu:");
-                        userInput = scanner.nextLine();
-
-                        // If user enters "exit", go back to the main menu
-                        if (userInput.equalsIgnoreCase("back")) {
-                            System.out.println("Returning to the main menu...");
-
-                            break; // Exit the current while loop and return to the main menu
-                        }
-
-                        // Try to find the dealership
-                        dealer = company.find_dealership(userInput);
-
-                        if (dealer != null) {
-                            validDealership = true; // Dealership found
-                        } else {
-                            // Dealership not found, prompt user to retry or exit
-                            System.out.println("Dealership ID not found.");
-                            System.out.println("Would you like to try again or return to the main menu? (Enter any key to retry or 'exit' to go back): ");
-                            String retryInput = scanner.nextLine();
-
-                            if (retryInput.equalsIgnoreCase("exit")) {
-                                System.out.println("Returning to the main menu...");
-
-                                break; // Exit the current while loop and return to the main menu
-                            }
-                            // Otherwise, the loop will continue to prompt for a valid dealership ID
-                        }
-                    }
-
+                    Dealership dealer = getDealership(company, scanner); // will hold Dealership object
                     // Proceed with enabling or disabling the vehicle receiving status once a valid dealership is found
                     if (dealer != null) {
-                        System.out.println("Enable or disable vehicle receiving status for dealership " + userInput + "? (Enter 'enable' or 'disable')");
-                        userInput = scanner.nextLine();
-
-                        if (userInput.equalsIgnoreCase("enable")) {
-                            // Check if the dealership's vehicle receiving status is already enabled
-                            if (dealer.getStatus_AcquiringVehicles()) {
-                                System.out.println("Dealership " + dealer.getDealerId() + " is already set to receive vehicles.");
-                            } else {
-                                // Enable vehicle receiving for the dealership
-                                dealer.enable_receiving_vehicle();
-                                System.out.println("Vehicle receiving status for dealership " + dealer.getDealerId() + " has been enabled.");
-                            }
-                        } else if (userInput.equalsIgnoreCase("disable")) {
-                            // Disable the vehicle receiving status
-                            if (!dealer.getStatus_AcquiringVehicles()) {
-                                System.out.println("Dealership " + dealer.getDealerId()+ " is already set to not receive vehicles.");
-                            } else {
-                                dealer.disable_receiving_vehicle();
-                                System.out.println("Vehicle receiving status for dealership " + dealer.getDealerId() + " has been disabled.");
-                            }
-                        } else {
-                            System.out.println("Invalid input. Please enter 'enable' or 'disable'.");
-                        }
+                        changeReceivingStatus(dealer, scanner);
                     }
 
                     // After completing the dealership status change process, return to the main menu
                     continue; // Exit Case 3 and go back to the main menu
-
-
                 case "4":
                     // writing dealership inventory to file
                     int itemsWritten =  writeData(getCompanyData(company), scanner);
@@ -140,6 +82,86 @@ public class Main {
         scanner.close();
     }
 
+    private static String getDealershipIDList(Company company) {
+        String output = "";
+        int added = 0;
+        int idPerLine = 6;
+        for (Dealership dealership : company.get_list_dealerships()) {
+            output += dealership.getDealerId() + "\t";
+            if (added % idPerLine == idPerLine - 1) {
+                output += "\n";
+            }
+            added++;
+        }
+        if (output.isEmpty()) {
+            return "No valid Dealerships.";
+        }
+        return output;
+    }
+
+    private static Dealership getDealership(Company company, Scanner scanner) {
+        String userInput;
+        Dealership dealer;
+        do {
+            System.out.println("Valid ID's:\n" +getDealershipIDList(company));
+            System.out.print("Enter the ID of the dealership or back to return to menu: ");
+            userInput = scanner.nextLine();
+
+            // If user enters "exit", go back to the main menu
+            if (userInput.equalsIgnoreCase("back")) {
+                System.out.println("Returning to the main menu...");
+                return null; // Exit the method and return to the main menu
+            }
+
+            // Try to find the dealership
+            dealer = company.find_dealership(userInput);
+
+            if (dealer == null) {
+                // Dealership not found, prompt user to retry or exit
+                System.out.println("Dealership ID not found.");
+                System.out.print("Would you like to try again or return to the main menu? "+
+                                   "(Enter any key to retry or 'exit' to go back): ");
+                userInput = scanner.nextLine();
+
+                if (userInput.equalsIgnoreCase("exit")) {
+                    System.out.println("Returning to the main menu...");
+                    return null; // Exit the current while loop and return to the main menu
+                }
+                // Otherwise, the loop will continue to prompt for a valid dealership ID
+            }
+        } while (dealer == null);
+
+        return dealer;
+    }
+
+    private static void changeReceivingStatus(Dealership dealer, Scanner scanner) {
+        String userInput;
+        System.out.println("Enable or disable vehicle receiving status for dealership "
+                + dealer.getDealerId() + "? (Enter 'enable' or 'disable')\n" +
+                "Currently enabled? (" + dealer.getStatus_AcquiringVehicles() + ")");
+        userInput = scanner.nextLine();
+
+        if (userInput.equalsIgnoreCase("enable")) {
+            // Check if the dealership's vehicle receiving status is already enabled
+            if (dealer.getStatus_AcquiringVehicles()) {
+                System.out.println("Dealership " + dealer.getDealerId() + " is already set to receive vehicles.");
+            } else {
+                // Enable vehicle receiving for the dealership
+                dealer.enable_receiving_vehicle();
+                System.out.println("Vehicle receiving status for dealership " + dealer.getDealerId() + " has been enabled.");
+            }
+        } else if (userInput.equalsIgnoreCase("disable")) {
+            // Disable the vehicle receiving status
+            if (!dealer.getStatus_AcquiringVehicles()) {
+                System.out.println("Dealership " + dealer.getDealerId()+ " is already set to not receive vehicles.");
+            } else {
+                dealer.disable_receiving_vehicle();
+                System.out.println("Vehicle receiving status for dealership " + dealer.getDealerId() + " has been disabled.");
+            }
+        } else {
+            System.out.println("Invalid input. Please enter 'enable' or 'disable'.");
+        }
+    }
 
     /**
      * Opens a JSON file based on the given mode and user input.
@@ -190,7 +212,6 @@ public class Main {
         return jsonio;
     }
 
-
     /**
      * Populates an inventory map with vehicle data from a list of maps.
      * <p>
@@ -231,7 +252,6 @@ public class Main {
         }
     }
 
-
     /**
      * Reads data from a JSON file and populates an inventory.
      * <p>
@@ -265,7 +285,6 @@ public class Main {
         dataToInventory(inventory, data, company);
     }
 
-
     /**
      * Writes data to the JSON file contained by {@link JSONIO} object.
      * <p>
@@ -297,7 +316,6 @@ public class Main {
         }
         return 0;
     }
-
 
     /**
      * Retrieves vehicle data for a given dealership.
@@ -377,8 +395,6 @@ public class Main {
         }
 
     }
-
-
 
     /**
      * Prints information about pending vehicle deliveries and dealership status.
