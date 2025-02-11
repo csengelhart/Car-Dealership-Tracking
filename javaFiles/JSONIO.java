@@ -8,7 +8,6 @@ import org.json.simple.parser.ParseException;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.*;
-import java.util.Objects;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -42,7 +41,11 @@ public class JSONIO
     public JSONIO(String filePath, char mode) throws ReadWriteException {
         this.mode = getMode(mode);
         if (filePath.endsWith(".json")) {
-            this.file = new File(filePath);
+            file = new File(filePath);
+            if (!file.exists()) {
+                throw new ReadWriteException("filePath \"" + filePath +"\" does not exist "
+                        + "or could not be found where indicated.");
+            }
         } else {
             throw new ReadWriteException("filePath \"" + filePath +"\" is not a .json file. "
                                         + "Make sure to include .json at the end for filePath.");
@@ -103,19 +106,42 @@ public class JSONIO
         return (long) map.get(getDateKey());
     }
 
-        /**
-         * Takes a JSONObject and creates and returns a Map. Fills the Map with the
-         * data from the JSONObject with the same keys as keys. If any keys are absent,
-         * null is returned.
-         *
-         * @param jObj The JSONObject that data is being extracted from.
-         */
+    /**
+     * Confirms that the given Object is an instance of the correct type.
+     * (Long for price and acquisition date, String otherwise)
+     * Assumes that the key is a valid key (should be confirmed before calling).
+     *
+     * @param key The key value of the object in the data Map
+     * @param object The Object whose type is being checked
+     * @return Whether object is of the correct type.
+     */
+    private boolean validJSONObjectType(String key, Object object) {
+        if (key.equals(getDateKey()) || key.equals(getPriceKey())) {
+            return object instanceof Long;
+        }
+        return object instanceof String;
+    }
+
+    /**
+     * Takes a JSONObject and creates and returns a Map. Fills the Map with the
+     * data from the JSONObject with the same keys as keys. If any keys are absent,
+     * null is returned.
+     *
+     * @param jObj The JSONObject that data is being extracted from.
+     */
     private Map<String, Object> readJSONObject(JSONObject jObj) {
         Map<String, Object> map = new HashMap<>();
 
         for (String key : keys) {
             Object dataPoint = jObj.get(key);
             if (dataPoint == null) {return null;}
+            if (!validJSONObjectType(key, dataPoint)) {
+                System.out.println("Key \"" + key + "\" with value (" + dataPoint + ")" +
+                        " is the wrong type of Object.\n" +
+                        "(Long for price or acquisition date and String otherwise).\n" +
+                        "Vehicle not added to inventory.\n");
+                return null;
+            }
             map.put(key, dataPoint);
 
         }
@@ -252,41 +278,6 @@ public class JSONIO
         File file = selectJsonFile();
         if (file == null) {return null;}
         return file.toString();
-    }
-
-
-
-
-    // for testing purposes
-    public static void main(String[] args) {
-        try {
-            System.out.println("Select an inventory file to process");
-            String input_filePath = Objects.requireNonNull(selectJsonFile()).toString();
-
-            // input file
-            File file = new File(input_filePath);
-            if (!file.exists() || file.length() == 0) {
-                throw new ReadWriteException("The file does not exist or is empty.");
-            }
-
-            JSONIO jReadExample = new JSONIO(input_filePath, 'r');
-            List<Map<String, Object>> read = jReadExample.read();
-
-            System.out.println("Create a name and choose location to save output file");
-            String output_filePath = Objects.requireNonNull(selectJsonFile()).toString();
-
-            JSONIO jWriteExample = new JSONIO(output_filePath, 'w');
-
-            int jObjsRead = jWriteExample.write(read);
-            if (jObjsRead == read.size()) {
-                System.out.println("Added all files.");
-            } else {
-                System.out.println("Added " + jObjsRead + "/" + read.size() + " items.");
-            }
-        } catch (ReadWriteException e) {
-            System.out.println(e.getMessage());
-        }
-
     }
 
     public String toString() {
