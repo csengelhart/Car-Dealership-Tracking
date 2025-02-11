@@ -354,10 +354,19 @@ public class Main {
     }
 
     /**
+     * Retrieves vehicle data for all dealerships within a company.
      *
+     * This method gathers vehicle information from all dealerships associated with the
+     * given company and compiles it into a single list of maps. Each map in the list
+     * represents a vehicle and contains its attributes.
      *
-     * @param company
-     * @return
+     * @param company The {@link Company} object whose dealership vehicle data is to be retrieved.
+     *                This company object should contain a collection of {@link Dealership} objects.
+     * @return A {@link List} of {@link Map} objects. Each {@link Map} represents a vehicle
+     *         and contains its attributes (dealership ID, vehicle type, manufacturer, model,
+     *         vehicle ID, price, and acquisition date) as key-value pairs. Returns all vehicles from each
+     *         Dealership in the company. Returns an empty list if the company has no dealerships
+     *         or if none of the dealerships have any vehicles.
      */
     private static List<Map<String, Object>> getCompanyData(Company company) {
         List<Map<String, Object>> list = new ArrayList<>();
@@ -393,6 +402,21 @@ public class Main {
 
     }
 
+
+
+    /**
+     * Prints information about pending vehicle deliveries and dealership status.
+     *
+     * This method iterates through the provided inventory of vehicles and prints
+     * details about each vehicle, including its associated dealership and the
+     * dealership's current vehicle receiving status (accepting or not accepting vehicles).
+     *
+     * @param inventory A {@link Map} where the key is a {@link Vehicle} object and the value
+     *                  is the dealership ID (a String). This map represents the pending
+     *                  vehicle deliveries.
+     * @param company   The {@link Company} object used to look up dealership information
+     *                  based on the dealership ID.
+     */
     private static void printPending(Map<Vehicle, String> inventory, Company company) {
         Dealership d;
         for (Vehicle vehicle : inventory.keySet()) {
