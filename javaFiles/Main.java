@@ -173,7 +173,6 @@ public class Main {
      * enters an invalid path multiple times, the method returns null.
      *
      * @param mode A character representing the mode in which the file should be opened ('r' for read, 'w' for write).
-     *
      * @param sc   A {@link Scanner} object used to read user input from the console for path selection and retry prompts.
      * @return     A {@link JSONIO} object representing the opened file, or null if no valid file path is selected.
      */
@@ -255,6 +254,27 @@ public class Main {
         }
     }
 
+
+    /**
+     * Reads data from a JSON file and populates an inventory.
+     *
+     * This method opens a JSON file in "read" mode ('r') using the provided {@link Scanner}
+     * and a {@link JSONIO} object. If the file cannot be opened (e.g., file not found, invalid
+     * permissions), the method returns without doing anything. Otherwise, it reads the JSON
+     * data, which is expected to be a list of maps, where each map represents a vehicle.
+     * This data is then used to populate the provided inventory map and associate
+     * vehicles with their respective dealerships within the given company.
+     *
+     * @param sc  A {@link Scanner} object used by {@link #openFile(char, Scanner)} to read user input from the console for path 
+     *            selection and retry prompts.
+     * @param inventory A {@link Map} where the key is a {@link Vehicle} object and the value
+     *                  is the dealership ID (a String). This map represents the inventory
+     *                  to be populated.  The dealership ID is used to associate the vehicle
+     *                  with a specific dealership.
+     * @param company The {@link Company} object that manages the dealerships. This object is used
+     *                to find existing dealerships or create new {@link Dealership} objects if
+     *                they don't already exist.
+     */
     private static void readData(Scanner sc, Map<Vehicle, String> inventory, Company company) {
         List<Map<String, Object>> data = new ArrayList<>();
         JSONIO jsonio = openFile('r', sc);
