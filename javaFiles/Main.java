@@ -167,6 +167,7 @@ public class Main {
 
     /**
      * Opens a JSON file based on the given mode and user input.
+     *
      * This method allows the user to choose a JSON file and opens it in the specified mode (read or write).
      * It will validate the file path and mode, and repeatedly prompt the user for a new path if an invalid path is entered.
      * If a valid file path is found, a {@link JSONIO} instance is created with the path and mode passed to it and returned. If the user cancels the file chooser or
@@ -288,6 +289,24 @@ public class Main {
         dataToInventory(inventory, data, company);
     }
 
+
+    /**
+     * Writes data to the JSON file contained by {@link JSONIO} object.
+     *
+     * This method opens a JSON file contained in {@link JSONIO} object
+     * in write ("w") mode and writes data in the form of a {@link List}
+     * of {@link Map} which consists of String keys with Object values to the file.
+     * If the file cannot be opened or an error occurs during the write operation, an error
+     * message is printed to the console, and the method returns 0. If data is successfully
+     * written, the method returns the number of entries written in the file.
+     *
+     * @param data A {@link List} of {@link Map} objects representing the data to be written
+     *  *             to the JSON file. Each Map represents data from a vehicle.
+     * @param sc A {@link Scanner} object used by {@link #openFile(char, Scanner)} to read user input from the console for path
+     *      *            selection and retry prompts.
+     * @return The number of items successfully written to the file. Returns 0 if no data
+     *  *         is provided, the file cannot be opened, or an error occurs during writing.
+     */
     private static int writeData(List<Map<String, Object>> data, Scanner sc) {
         if (data == null) {
             System.out.println("No data to write.");
