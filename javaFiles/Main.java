@@ -26,7 +26,8 @@ public class Main {
                             "3) Change dealership vehicle receiving status. \n" +
                             "4) Write dealership inventory to file.\n" +
                             "5) Read a json file.\n" +
-                            "6) Exit program."
+                            "6) Print Company Inventory.\n" +
+                            "7) Exit program."
             );
 
             userInput = scanner.nextLine();
@@ -68,7 +69,47 @@ public class Main {
                     readData(scanner, carInventory, company);
                     System.out.println("Reading JSON file...");
                     continue;
-                case "6": // exit program
+
+                case "6":
+                    // Get companyData
+                    List<Map<String, Object>> companyData = getCompanyData(company);
+
+                    // if company is empty, print out message and return to menu
+                    if(companyData.isEmpty())
+                    {
+                        System.out.println("There is currently no inventory to print");
+                        continue;
+                    }
+
+                    // Each Map object has vehicle information
+                    for(Map<String,Object> vehicle : companyData)
+                    {
+                        // Iterate through Map in collection and print data
+                        for(Map.Entry<String,Object> entry : vehicle.entrySet())
+                        {
+                            String key = entry.getKey();
+                            Object value = entry.getValue();
+
+                            // if the key is acquisition date, convert from long to Date format
+                            // print and continue with next key-value pair
+                            if(key.equals("acquisition_date"))
+                            {
+                                try {
+                                    String long_date = value.toString();
+                                    long longNumber = Long.parseLong(long_date);
+                                    Date acq_date = new Date(longNumber);
+                                    System.out.println(key + ": " + acq_date);
+                                    continue;
+                                } catch (NumberFormatException e) {
+                                    System.err.println("Error: The string is not a valid long number: " + e.getMessage());
+                                }
+                            }
+                            System.out.println(key + ": " + value);
+                        }
+                        System.out.println("---"); // Separator between maps
+                    }
+                    continue;
+                case "7": // exit program
                     System.out.println("Exiting program...");
                     System.exit(0);
                     break;
