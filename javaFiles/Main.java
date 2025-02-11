@@ -322,6 +322,21 @@ public class Main {
         return 0;
     }
 
+
+    /**
+     * Retrieves vehicle data for a given dealership.
+     *
+     * This method generates a list of maps, where each map represents a vehicle
+     * in the specified dealership's inventory.  Each map contains key-value pairs
+     * representing the vehicle's attributes.
+     *
+     * @param dealership A {@link Dealership} object whose vehicle data is to be retrieved.
+     *                  Dealership objects hold a collection {@link Vehicle} objects.
+      *@return {@link List} of {@link Map} objects where each Map object holds a specific vehicle
+     *         and its data.(dealership ID, vehicle type, manufacturer, model,
+     *         vehicle ID, price, and acquisition date) as key-value pairs. Method returns
+     *         null if the Dealership object is empty.
+     */
     private static List<Map<String, Object>> getDealershipData(Dealership dealership) {
         List<Map<String, Object>> list = new ArrayList<>();
         for (Vehicle vehicle: dealership.getInventory_Vehicles()) {
