@@ -35,6 +35,36 @@
          "vehicle_id":"229393",
 	  "price": 49889,
 	  "acquisition_date": 1515354694451
-      }	  
+      },
+
+     {
+       "dealership_id":"12513",
+       "vehicle_type":"suv",
+       "vehicle_manufacturer":"Ford",
+       "vehicle_model":"Escape",
+       "vehicle_id":"123456",
+       "price": 25000,
+       "acquisition_date": 1515354694451
+     },
+
+     {
+       "dealership_id":"77338",
+       "vehicle_type":"suv",
+       "vehicle_manufacturer":"Ford",
+       "vehicle_model":"Explorer",
+       "vehicle_id":"607080",
+       "price": 30000,
+       "acquisition_date": 1515354694451
+     },
+     {
+       "dealership_id":"test123",
+       "vehicle_type":"sedan",
+       "vehicle_manufacturer":"Toyota",
+       "vehicle_model":"Camry",
+       "vehicle_id":"896532",
+       "price": 35000,
+       "acquisition_date": 1515354694451
+     }
+
    ]
 }
