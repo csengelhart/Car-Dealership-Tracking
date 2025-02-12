@@ -137,7 +137,18 @@ public class Main {
     }
 
 
-
+    /**
+     * Generates a formatted list of dealership IDs.
+     *
+     * This method retrieves all dealerships associated with the given company and
+     * creates a string containing their IDs, separated by tabs.  The IDs are arranged
+     * with a maximum of 6 IDs per line. If the company has no dealerships,
+     * the method returns a message indicating this.
+     *
+     * @param company The {@link Company} object whose dealership IDs are to be retrieved.
+     * @return A string containing the formatted list of dealership IDs, or the
+     *         message "No valid Dealerships." if the company has no dealerships.
+     */
     private static String getDealershipIDList(Company company) {
         String output = "";
         int added = 0;
@@ -155,6 +166,21 @@ public class Main {
         return output;
     }
 
+
+
+    /**
+     * Prompts the user to select a dealership by ID.
+     *
+     * This method displays a list of valid dealership IDs, prompts the user to enter
+     * a dealership ID, and attempts to find the corresponding {@link Dealership}
+     * object within the given company. It continues to prompt the user until a valid
+     * dealership ID is entered or the user chooses to return to the main menu.
+     *
+     * @param company The {@link Company} object containing the dealerships.
+     * @param scanner The {@link Scanner} object used to read user input.
+     * @return The selected {@link Dealership} object if a valid ID is entered, or
+     *         null if the user chooses to return to the main menu
+     */
     private static Dealership getDealership(Company company, Scanner scanner) {
         String userInput;
         Dealership dealer;
@@ -192,7 +218,16 @@ public class Main {
 
 
 
-
+    /**
+     * Changes the vehicle receiving status of a dealership.
+     *
+     * This method prompts the user to either enable or disable the vehicle receiving
+     * status for the specified dealership.  It checks the current status and
+     * provides feedback to the user.
+     *
+     * @param dealer  The {@link Dealership} object whose receiving status is to be changed.
+     * @param scanner The {@link Scanner} object used to read user input.
+     */
     private static void changeReceivingStatus(Dealership dealer, Scanner scanner) {
         String userInput;
         System.out.println("Enable or disable vehicle receiving status for dealership "
