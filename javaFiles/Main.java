@@ -75,22 +75,19 @@ public class Main {
                     continue;
                 case "7": // exit program
                     System.out.println("Exiting program...");
-                    System.exit(0);
                     break;
                 default:
                     System.out.println("Invalid input. Please select a valid option.");
                     continue;
             }
-
             break;
         }
         scanner.close();
     }
 
-
     /**
      * Prints the inventory of vehicles for each dealership in the company.
-     *
+     * <p>
      * This method iterates through the list of dealerships associated with the given
      * company. For each {@link Dealership} it retrieves the vehicle inventory and prints
      * information about each {@link Vehicle}. If a dealership has no inventory, a message
@@ -112,7 +109,7 @@ public class Main {
             return;
         }
 
-        ArrayList<Vehicle> list_vehicles = new ArrayList<Vehicle>();
+        ArrayList<Vehicle> list_vehicles;
 
         for(Dealership dealership : list_dealers)
         {
@@ -136,10 +133,9 @@ public class Main {
         }
     }
 
-
     /**
      * Generates a formatted list of dealership IDs.
-     *
+     * <p>
      * This method retrieves all dealerships associated with the given company and
      * creates a string containing their IDs, separated by tabs.  The IDs are arranged
      * with a maximum of 6 IDs per line. If the company has no dealerships,
@@ -150,27 +146,25 @@ public class Main {
      *         message "No valid Dealerships." if the company has no dealerships.
      */
     private static String getDealershipIDList(Company company) {
-        String output = "";
+        StringBuilder output = new StringBuilder();
         int added = 0;
         int idPerLine = 6;
         for (Dealership dealership : company.get_list_dealerships()) {
-            output += dealership.getDealerId() + "\t";
+            output.append(dealership.getDealerId()).append("\t");
             if (added % idPerLine == idPerLine - 1) {
-                output += "\n";
+                output.append("\n");
             }
             added++;
         }
-        if (output.isEmpty()) {
+        if (output.length() == 0) {
             return "No valid Dealerships.";
         }
-        return output;
+        return output.toString();
     }
-
-
 
     /**
      * Prompts the user to select a dealership by ID.
-     *
+     * <p>
      * This method displays a list of valid dealership IDs, prompts the user to enter
      * a dealership ID, and attempts to find the corresponding {@link Dealership}
      * object within the given company. It continues to prompt the user until a valid
@@ -216,11 +210,9 @@ public class Main {
         return dealer;
     }
 
-
-
     /**
      * Changes the vehicle receiving status of a dealership.
-     *
+     * <p>
      * This method prompts the user to either enable or disable the vehicle receiving
      * status for the specified dealership.  It checks the current status and
      * provides feedback to the user.
