@@ -71,43 +71,38 @@ public class Main {
                     continue;
 
                 case "6":
-                    // Get companyData
-                    List<Map<String, Object>> companyData = getCompanyData(company);
+                   ArrayList<Dealership> list_dealers = company.get_list_dealerships();
 
-                    // if company is empty, print out message and return to menu
-                    if(companyData.isEmpty())
-                    {
-                        System.out.println("There is currently no inventory to print");
-                        continue;
-                    }
+                   // if company does not have any dealerships, print message and return to menu
+                   if(list_dealers.isEmpty())
+                   {
+                       System.out.println("There are currently no dealerships in the company");
+                       continue;
+                   }
 
-                    // Each Map object has vehicle information
-                    for(Map<String,Object> vehicle : companyData)
-                    {
-                        // Iterate through Map in collection and print data
-                        for(Map.Entry<String,Object> entry : vehicle.entrySet())
-                        {
-                            String key = entry.getKey();
-                            Object value = entry.getValue();
+                   ArrayList<Vehicle> list_vehicles = new ArrayList<Vehicle>();
 
-                            // if the key is acquisition date, convert from long to Date format
-                            // print and continue with next key-value pair
-                            if(key.equals("acquisition_date"))
-                            {
-                                try {
-                                    String long_date = value.toString();
-                                    long longNumber = Long.parseLong(long_date);
-                                    Date acq_date = new Date(longNumber);
-                                    System.out.println(key + ": " + acq_date);
-                                    continue;
-                                } catch (NumberFormatException e) {
-                                    System.err.println("Error: The string is not a valid long number: " + e.getMessage());
-                                }
-                            }
-                            System.out.println(key + ": " + value);
-                        }
-                        System.out.println("---"); // Separator between maps
-                    }
+
+                   for(Dealership dealership : list_dealers)
+                   {
+                      // for each dealership get the list of vehicles and print
+                      // data for each vehicle
+                      list_vehicles = dealership.getInventory_Vehicles();
+                      if(list_vehicles.isEmpty())
+                      {
+                          System.out.println("Dealership: " + dealership.getDealerId() + ", Does not currently have any inventory");
+                          continue;
+                      }
+                      System.out.println("Dealership: " + dealership.getDealerId() + "\n ");
+
+                      for(Vehicle vehicle : list_vehicles)
+                      {
+                          System.out.println(vehicle.toString());
+                          System.out.println("\n");
+
+                      }
+                   }
+
                     continue;
                 case "7": // exit program
                     System.out.println("Exiting program...");
