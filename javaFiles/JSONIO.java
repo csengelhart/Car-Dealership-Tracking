@@ -42,7 +42,7 @@ public class JSONIO
         this.mode = getMode(mode);
         if (filePath.endsWith(".json")) {
             file = new File(filePath);
-            if (!file.exists()) {
+            if (!file.exists() && mode == 'r') {
                 throw new ReadWriteException("filePath \"" + filePath +"\" does not exist "
                         + "or could not be found where indicated.");
             }
@@ -173,7 +173,6 @@ public class JSONIO
         }
 
         assert jFile != null;
-
         jArray = (JSONArray)jFile.get("car_inventory");
 
         List< Map<String, Object> > maps = new ArrayList<>();
